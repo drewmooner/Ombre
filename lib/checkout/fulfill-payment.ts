@@ -44,8 +44,10 @@ async function confirmAndSendReceipt(
   );
 
   const emailResult = await sendPaymentReceiptIfNeeded(paidOrder.id);
-  if (!emailResult.ok && !("skipped" in emailResult && emailResult.skipped)) {
-    console.warn("[checkout] Payment receipt email failed:", emailResult.error);
+  if (!emailResult.ok) {
+    console.error("[checkout] Payment receipt email failed:", emailResult.error);
+  } else if (!("skipped" in emailResult && emailResult.skipped)) {
+    console.info("[checkout] Payment receipt email sent for order", paidOrder.id);
   }
 
   maybeRevalidateAfterPayment(options);

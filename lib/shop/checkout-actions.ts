@@ -229,10 +229,8 @@ export async function startCheckout(
     if (simulate) {
       const origin = await appOrigin();
       const completeUrl = `${origin}/checkout/complete?reference=${encodeURIComponent(ref)}`;
-      const emailResult = await sendOrderAwaitingPaymentEmail(order, completeUrl);
-      if (!emailResult.ok) {
-        console.warn("[checkout] Order email failed:", emailResult.error);
-      }
+      // Simulated checkout redirects immediately — receipt email sends on /checkout/complete
+      // (avoids back-to-back Resend calls and the wrong "complete payment" email).
 
       revalidatePath("/", "layout");
       revalidatePath("/store/orders");

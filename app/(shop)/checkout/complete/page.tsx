@@ -11,7 +11,6 @@ type CompletePageProps = {
 export default async function CheckoutCompletePage({
   searchParams,
 }: CompletePageProps) {
-  await runOrderMaintenance();
   const { reference } = await searchParams;
 
   if (!reference?.trim()) {
@@ -29,6 +28,8 @@ export default async function CheckoutCompletePage({
     revalidate: false,
   });
 
+  await runOrderMaintenance();
+
   let message: string;
   if (!result.ok) {
     message = result.error;
@@ -36,6 +37,9 @@ export default async function CheckoutCompletePage({
     const emailResult = await sendPaymentReceiptIfNeeded(result.orderId);
     if (!emailResult.ok) {
       message = `Payment confirmed, but we could not email your receipt (${emailResult.error}). Check spam or contact us on WhatsApp.`;
+    } else if ("skipped" in emailResult && emailResult.skipped) {
+      message =
+        "Thank you — your payment is confirmed. Your receipt was already emailed.";
     } else {
       message =
         "Thank you — your payment is confirmed. We've emailed you a receipt and will prepare your order for delivery.";

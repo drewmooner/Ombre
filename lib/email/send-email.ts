@@ -1,5 +1,8 @@
-import { emailBrandLogoHtml } from "@/lib/brand-logo";
 import { envVar } from "@/lib/env";
+import {
+  emailBrandLogoHtml,
+  getEmailLogoAttachment,
+} from "@/lib/email/logo-attachment";
 import { fetchResend, formatNetworkError } from "@/lib/email/resend-fetch";
 
 const RESEND_API = "https://api.resend.com";
@@ -50,6 +53,10 @@ export async function sendEmail(options: {
         subject: options.subject,
         html: options.html,
         text: options.text,
+        attachments:
+          options.includeLogo === false
+            ? undefined
+            : [getEmailLogoAttachment()],
       }),
     });
   } catch (err) {

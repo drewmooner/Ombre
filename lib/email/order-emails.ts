@@ -6,7 +6,7 @@ import {
   markReceiptEmailSent,
   findOrderById,
 } from "@/lib/order-store";
-import { emailBrandLogoHtml } from "@/lib/brand-logo";
+import { emailBrandLogoHtml } from "@/lib/email/logo-attachment";
 import { sendEmail, type SendEmailResult } from "@/lib/email/send-email";
 
 function orderRecipientEmail(order: Order): string {
