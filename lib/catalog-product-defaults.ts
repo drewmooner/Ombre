@@ -37,9 +37,12 @@ export function getDefaultProductFields(
     catalog.defaultProductName?.trim() ||
     inferDefaultProductName(catalog.name, catalog.slug);
   const baseSlug = slugify(baseName);
-  const n = nextProductNumber(baseSlug, existingSlugs);
-  const slug = `${baseSlug}-${n}`;
-  const name = n === 1 ? baseName : `${baseName} ${n}`;
+  const taken = new Set(existingSlugs.map((s) => s.toLowerCase()));
+  let slug = baseSlug;
+  if (taken.has(baseSlug)) {
+    const n = nextProductNumber(baseSlug, existingSlugs);
+    slug = `${baseSlug}-${n}`;
+  }
 
-  return { name, slug };
+  return { name: baseName, slug };
 }

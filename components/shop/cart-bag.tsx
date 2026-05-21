@@ -96,10 +96,16 @@ export function CartBag({
                 </Link>
                 <p className="mt-1 text-sm font-semibold">
                   {formatNaira(item.price)}
+                  {!compact ? (
+                    <span className="text-[var(--muted)] sm:hidden">
+                      {" "}
+                      · {formatNaira(item.price * item.quantity)} total
+                    </span>
+                  ) : null}
                 </p>
               </div>
 
-              <div className="mt-2 flex items-center justify-between gap-3 sm:mt-3">
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 sm:mt-3 sm:gap-3">
                 <div className="morph-btn flex items-center rounded-full">
                   <button
                     type="button"

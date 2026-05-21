@@ -5,6 +5,7 @@ import { AddToCartButton } from "@/components/add-to-cart-button";
 import { SaveProductImageButton } from "@/components/shop/save-product-image-button";
 import { MorphButton } from "@/components/morph-button";
 import { formatNaira } from "@/lib/format-price";
+import { getProductDisplayName } from "@/lib/product-display-name";
 import { getProductBySlug } from "@/lib/products.server";
 import {
   buildProductInquiryMessage,
@@ -23,8 +24,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!product) notFound();
 
+  const displayName = getProductDisplayName(product);
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-10">
+    <div className="shop-page mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-10">
       <Link
         href="/"
         className="link-accent mb-8 inline-block text-sm text-[var(--muted)] transition-colors"
@@ -37,7 +40,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="relative aspect-[3/4] w-full bg-[var(--background-deep)]">
             <Image
               src={product.images[0]}
-              alt={product.name}
+              alt={displayName}
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -51,8 +54,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </div>
 
         <div className="flex flex-col lg:py-4">
-          <h1 className="font-display text-4xl font-medium tracking-tight text-[var(--foreground)] sm:text-5xl">
-            {product.name}
+          <h1 className="font-display text-3xl font-medium tracking-tight text-[var(--foreground)] sm:text-4xl lg:text-5xl">
+            {displayName}
           </h1>
           <p className="mt-4 text-base leading-relaxed text-[var(--muted)]">
             {product.description}
@@ -90,7 +93,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <AddToCartButton product={product} fullWidth size="large" />
             <MorphButton
-              href={buildWhatsAppUrl(buildProductInquiryMessage(product.name))}
+              href={buildWhatsAppUrl(buildProductInquiryMessage(displayName))}
               className="sm:flex-1"
             >
               Questions? WhatsApp

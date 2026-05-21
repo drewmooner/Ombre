@@ -24,23 +24,23 @@ export function Header({ customer = null }: HeaderProps) {
 
   return (
     <header className="site-header">
-      <div className="morph-surface site-header-bar mx-auto flex max-w-7xl flex-col gap-4 overflow-visible rounded-2xl px-4 py-3 sm:flex-row sm:items-center sm:gap-6 sm:px-6">
+      <div className="morph-surface site-header-bar mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-3 overflow-visible rounded-2xl px-3 py-3 sm:grid-cols-[auto_1fr_auto] sm:gap-4 sm:px-6 sm:py-3">
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2.5"
+          className="col-start-1 row-start-1 flex min-w-0 shrink-0 items-center gap-2"
           aria-label="Ombré home"
         >
-          <span className="morph-btn brand-mark flex h-11 w-11 items-center justify-center rounded-xl font-display text-xl font-semibold">
+          <span className="morph-btn brand-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg font-semibold sm:h-11 sm:w-11 sm:text-xl">
             O
           </span>
-          <span className="site-header-brand-name hidden font-display text-2xl font-medium tracking-tight sm:inline">
+          <span className="site-header-brand-name truncate font-display text-xl font-medium tracking-tight sm:text-2xl">
             Ombré
           </span>
         </Link>
 
         <form
           onSubmit={onSearch}
-          className="relative order-3 w-full sm:order-none sm:mx-auto sm:max-w-md sm:flex-1"
+          className="relative col-span-2 row-start-2 w-full min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:mx-auto sm:max-w-md"
         >
           <input
             type="search"
@@ -59,13 +59,13 @@ export function Header({ customer = null }: HeaderProps) {
           </button>
         </form>
 
-        <div className="order-2 flex items-center justify-end gap-3 overflow-visible sm:order-none sm:shrink-0">
+        <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 overflow-visible sm:col-start-3 sm:gap-3">
           <span
-            className="morph-btn site-header-pill flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium"
+            className="morph-btn site-header-pill flex h-10 min-w-10 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium sm:min-w-0 sm:px-3 sm:py-2"
             title="Nigeria · NGN only"
           >
             <span aria-hidden>🇳🇬</span>
-            <span>NGN</span>
+            <span className="hidden min-[400px]:inline">NGN</span>
           </span>
 
           <HeaderAuth customer={customer} />

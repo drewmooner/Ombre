@@ -61,7 +61,7 @@ export function ShopHome({ catalogs }: ShopHomeProps) {
           No products in {selected.name} yet.
         </p>
       ) : (
-        <ul className="grid grid-cols-2 gap-x-4 gap-y-10 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8">
+        <ul className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8">
           {selected.products.map((product) => (
             <li key={product.id}>
               <ProductCard product={product} />

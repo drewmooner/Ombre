@@ -11,8 +11,8 @@ export function StoreNav({ shopOpen, activeOrderCount = 0 }: StoreNavProps) {
   const hasActiveOrders = activeOrderCount > 0;
   return (
     <header className="store-header">
-      <div className="store-header-inner">
-        <Link href="/store/catalogs" className="store-header-brand">
+      <div className="store-header-inner store-header-inner--responsive">
+        <Link href="/store/catalogs" className="store-header-brand min-w-0">
           <span className="morph-btn brand-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg font-semibold">
             O
           </span>
@@ -20,7 +20,7 @@ export function StoreNav({ shopOpen, activeOrderCount = 0 }: StoreNavProps) {
           <span className="store-header-label">Store</span>
         </Link>
 
-        <nav className="store-header-nav flex items-center gap-1 text-sm">
+        <nav className="store-header-nav flex items-center gap-1 text-sm" aria-label="Store">
           <Link href="/store/catalogs" className="store-header-nav-link">
             Catalogs
           </Link>

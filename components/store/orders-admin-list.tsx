@@ -151,6 +151,66 @@ function OrderDetailPanel({ order }: { order: Order }) {
   );
 }
 
+function OrderMobileCard({
+  order,
+  expanded,
+  onToggle,
+}: {
+  order: Order;
+  expanded: boolean;
+  onToggle: () => void;
+}) {
+  const active = isActiveOrder(order);
+  const itemQty = order.items.reduce((s, i) => s + i.quantity, 0);
+
+  return (
+    <article
+      className={`store-orders-mobile-card${active ? " store-orders-mobile-card--active" : ""}`}
+    >
+      <div className="store-orders-mobile-card-head">
+        <div className="min-w-0 flex-1">
+          <p className="text-xs text-[var(--muted)]">{formatOrderDate(order.createdAt)}</p>
+          <p
+            className={`mt-1 truncate text-sm font-semibold${active ? " text-[var(--accent)]" : ""}`}
+            title={order.customerEmail}
+          >
+            {order.customerEmail}
+          </p>
+          <p className="truncate text-xs text-[var(--muted)]">{order.delivery.fullName}</p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="font-display text-lg font-medium text-[var(--accent)] tabular-nums">
+            {formatNaira(order.total)}
+          </p>
+          <p className="text-xs text-[var(--muted)]">
+            {itemQty} {itemQty === 1 ? "item" : "items"}
+          </p>
+        </div>
+      </div>
+      <div className="store-orders-mobile-card-meta">
+        <StatusBadge status={order.status} />
+        {active ? <span className="store-order-active-pill">Active</span> : null}
+        <span className="store-orders-delivery-tag">
+          {deliveryMethodLabel(order.delivery.method)}
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={onToggle}
+        className="store-order-action-btn w-full"
+        aria-expanded={expanded}
+      >
+        {expanded ? "Hide details" : "View details"}
+      </button>
+      {expanded ? (
+        <div className="store-orders-mobile-card-detail">
+          <OrderDetailPanel order={order} />
+        </div>
+      ) : null}
+    </article>
+  );
+}
+
 export function OrdersAdminList({ orders }: OrdersAdminListProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
@@ -167,7 +227,24 @@ export function OrdersAdminList({ orders }: OrdersAdminListProps) {
   }
 
   return (
-    <div className="store-card store-orders-table-wrap">
+    <>
+      <div className="store-orders-mobile md:hidden">
+        {orders.map((order) => (
+          <OrderMobileCard
+            key={order.id}
+            order={order}
+            expanded={expandedId === order.id}
+            onToggle={() =>
+              setExpandedId(expandedId === order.id ? null : order.id)
+            }
+          />
+        ))}
+        <p className="store-orders-table-footer px-1">
+          {orders.length} {orders.length === 1 ? "order" : "orders"} · newest first
+        </p>
+      </div>
+
+      <div className="store-card store-orders-table-wrap hidden md:block">
       <div className="overflow-x-auto">
         <table className="store-orders-table">
           <thead>
@@ -264,5 +341,6 @@ export function OrdersAdminList({ orders }: OrdersAdminListProps) {
         {orders.length} {orders.length === 1 ? "order" : "orders"} · newest first
       </p>
     </div>
+    </>
   );
 }

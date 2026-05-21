@@ -1439,3 +1439,201 @@ body {
 .checkout-panel {
   box-shadow: 0 1px 3px rgba(20, 14, 16, 0.04);
 }
+
+/* ─── Mobile responsive ─── */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  overflow-x: clip;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Prevent flex/grid children from forcing horizontal scroll */
+.min-w-0,
+.site-header-bar,
+.shop-page,
+.store-page,
+.checkout-page {
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .site-header {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  .site-customer-greeting-text {
+    font-size: clamp(1.75rem, 8vw, 2.5rem);
+  }
+
+  .shop-catalog-select {
+    max-width: 100%;
+  }
+
+  .sliding-cart-btn {
+    height: 3.75rem;
+    width: 3.75rem;
+  }
+
+  .sliding-cart-btn svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .checkout-panel {
+    padding: 1.25rem !important;
+  }
+
+  .checkout-delivery-option {
+    padding: 0.875rem 1rem;
+  }
+
+  .store-header-inner--responsive {
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+  }
+
+  .store-header-brand-name {
+    font-size: 1.125rem;
+  }
+
+  .store-header-nav {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 0.125rem;
+    mask-image: linear-gradient(90deg, #000 92%, transparent);
+  }
+
+  .store-header-nav .store-header-nav-link {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .store-header-actions {
+    margin-left: auto;
+    flex-shrink: 0;
+    gap: 0.5rem;
+  }
+
+  .store-header-shop-toggle-form {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+  }
+
+  .store-page-header .morph-btn,
+  .store-page-header a {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .store-title {
+    font-size: 1.75rem;
+  }
+
+  .store-lead {
+    font-size: 0.875rem;
+  }
+
+  .store-order-action-btn {
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .product-lightbox {
+    padding: 0.75rem 0.75rem 5rem;
+  }
+
+  .product-lightbox-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .product-lightbox-stock-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* Store orders — card layout on small screens (table hidden via Tailwind md:) */
+.store-orders-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.store-orders-mobile-card {
+  border-radius: 1rem;
+  border: 1px solid rgba(var(--accent-rgb), 0.12);
+  background: var(--surface);
+  padding: 1rem;
+  box-shadow: var(--shadow-soft), var(--shadow-inset);
+}
+
+.store-orders-mobile-card--active {
+  box-shadow:
+    0 0 0 2px rgba(var(--accent-rgb), 0.28),
+    var(--shadow-soft);
+}
+
+.store-orders-mobile-card-head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.store-orders-mobile-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.store-orders-mobile-card-detail {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(var(--accent-rgb), 0.1);
+}
+
+/* Safe areas for fixed controls */
+@supports (padding: max(0px)) {
+  .site-header {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .sliding-cart-btn {
+    right: max(0px, env(safe-area-inset-right));
+  }
+
+  .morph-btn-primary.fixed {
+    bottom: max(1.25rem, env(safe-area-inset-bottom));
+    right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+  .morph-btn:not(.brand-mark),
+  .store-header-nav-link,
+  .store-order-action-btn,
+  button[type="submit"],
+  .checkout-delivery-option {
+    min-height: 2.75rem;
+  }
+}

@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import type { Product } from "./product-types";
+import { getProductDisplayName } from "./product-display-name";
 
 export type CartItem = {
   productId: string;
@@ -82,7 +83,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         {
           productId: product.id,
           slug: product.slug,
-          name: product.name,
+          name: getProductDisplayName(product),
           price: product.price,
           image: product.images[0],
           quantity: qty,

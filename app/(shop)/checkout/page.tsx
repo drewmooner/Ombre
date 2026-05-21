@@ -24,7 +24,7 @@ export default async function CheckoutPage(_props: CheckoutPageProps) {
   const settings = await getShopSettings();
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-10">
+    <div className="checkout-page mx-auto max-w-2xl px-4 py-8 pb-[max(2rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-10 lg:px-10">
       <Link
         href="/cart"
         className="link-accent mb-8 inline-block text-sm text-[var(--muted)]"

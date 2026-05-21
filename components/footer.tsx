@@ -6,7 +6,7 @@ import {
 
 export function Footer() {
   return (
-    <footer className="mt-20 border-t border-[rgba(var(--accent-rgb),0.1)] px-4 py-12 sm:px-6 lg:px-10">
+    <footer className="mt-16 border-t border-[rgba(var(--accent-rgb),0.1)] px-4 py-10 pb-[max(2.5rem,env(safe-area-inset-bottom))] sm:mt-20 sm:px-6 sm:py-12 lg:px-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:justify-between">
         <div>
           <p className="font-display text-2xl font-medium text-[var(--accent)]">Ombré</p>
@@ -15,7 +15,7 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="flex gap-12 text-sm">
+        <div className="flex flex-wrap gap-8 text-sm sm:gap-12">
           <div>
             <p className="mb-3 font-medium text-[var(--foreground)]">Shop</p>
             <ul className="space-y-2 text-[var(--muted)]">

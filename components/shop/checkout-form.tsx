@@ -219,7 +219,10 @@ export function CheckoutForm({
 
         <ul className="mt-6 divide-y divide-[rgba(var(--accent-rgb),0.08)]">
           {items.map((item) => (
-            <li key={item.productId} className="flex gap-4 py-4 first:pt-0 last:pb-0">
+            <li
+              key={item.productId}
+              className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:gap-4"
+            >
               <div className="relative h-[4.5rem] w-16 shrink-0 overflow-hidden rounded-xl border border-[rgba(var(--accent-rgb),0.1)]">
                 <Image
                   src={item.image}
@@ -235,7 +238,7 @@ export function CheckoutForm({
                   Quantity {item.quantity} · {formatNaira(item.price)} each
                 </p>
               </div>
-              <p className="shrink-0 text-sm font-semibold tabular-nums">
+              <p className="text-sm font-semibold tabular-nums sm:ml-auto sm:shrink-0 sm:text-right">
                 {formatNaira(item.price * item.quantity)}
               </p>
             </li>

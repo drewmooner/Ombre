@@ -18,6 +18,7 @@ import {
   findProductById,
   restoreProductPieces,
 } from "@/lib/product-store";
+import { getProductDisplayName } from "@/lib/product-display-name";
 import { getShopSettings } from "@/lib/shop-settings";
 import { getShopCustomer } from "@/lib/shop-auth";
 import { sendOrderAwaitingPaymentEmail } from "@/lib/email/order-emails";
@@ -170,7 +171,7 @@ export async function startCheckout(
       orderItems.push({
         productId: product.id,
         slug: product.slug,
-        name: product.name,
+        name: getProductDisplayName(product),
         price: product.price,
         quantity: line.quantity,
         image: product.images[0] ?? line.image,

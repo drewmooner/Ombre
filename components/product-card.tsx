@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { formatNaira } from "@/lib/format-price";
+import { getProductDisplayName } from "@/lib/product-display-name";
 import { useCart } from "@/lib/cart-context";
 import type { Product } from "@/lib/product-types";
 import { LockIcon } from "./icons";
@@ -16,6 +17,7 @@ type ProductCardProps = {
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const [added, setAdded] = useState(false);
+  const displayName = getProductDisplayName(product);
 
   function handleAdd() {
     if (!product.inStock) return;
@@ -33,7 +35,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="relative aspect-[3/4] w-full bg-[var(--background-deep)]">
           <Image
             src={product.images[0]}
-            alt={product.name}
+            alt={displayName}
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
@@ -54,7 +56,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <div className="flex flex-1 flex-col px-0.5">
         <Link href={`/product/${product.slug}`} className="block">
           <h3 className="text-[15px] font-semibold leading-snug text-[var(--foreground)]">
-            {product.name}
+            {displayName}
           </h3>
         </Link>
 

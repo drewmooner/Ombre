@@ -18,7 +18,7 @@ export function WhatsAppButton({
       href={buildWhatsAppUrl(message)}
       target="_blank"
       rel="noopener noreferrer"
-      className="morph-btn-primary fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105"
+      className="morph-btn-primary fixed bottom-5 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14"
       aria-label="Customer support on WhatsApp"
       title="Chat with us on WhatsApp"
     >

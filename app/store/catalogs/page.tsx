@@ -25,7 +25,7 @@ export default async function StoreCatalogsPage() {
             Tap a catalog to manage its products. Your shop homepage updates automatically.
           </p>
         </div>
-        <MorphButton href="/store/catalogs/new" variant="primary">
+        <MorphButton href="/store/catalogs/new" variant="primary" className="w-full sm:w-auto">
           New catalog
         </MorphButton>
       </header>
