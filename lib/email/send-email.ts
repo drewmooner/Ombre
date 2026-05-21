@@ -58,7 +58,10 @@ export async function sendEmail(options: {
         attachments:
           options.includeLogo === false
             ? undefined
-            : [getEmailLogoAttachment()],
+            : (() => {
+                const logo = getEmailLogoAttachment();
+                return logo ? [logo] : undefined;
+              })(),
       }),
     });
   } catch (err) {

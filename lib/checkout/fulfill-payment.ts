@@ -6,6 +6,7 @@ import {
   findOrderById,
   findOrderByPaystackReference,
 } from "@/lib/order-store";
+import { metadataOrderId } from "@/lib/paystack-metadata";
 import { verifyPaystackPayment } from "@/lib/paystack";
 
 export type FulfillPaymentResult =
@@ -18,6 +19,8 @@ export type FulfillPaymentOptions = {
    * Use true in Server Actions and Route Handlers only.
    */
   revalidate?: boolean;
+  /** From Paystack webhook payload when verify-by-URL reference alone fails. */
+  metadataOrderId?: string;
 };
 
 export function revalidateAfterPayment() {
@@ -104,7 +107,16 @@ export async function fulfillOrderPayment(
       return await fulfillOrderPaymentSimulated(reference, options);
     }
 
-    const verified = await verifyPaystackPayment(reference);
+    const hintedOrderId = options?.metadataOrderId?.trim() || null;
+    let verifyRef = reference.trim();
+    if (hintedOrderId) {
+      const hinted = await findOrderById(hintedOrderId);
+      if (hinted?.paystackReference) {
+        verifyRef = hinted.paystackReference;
+      }
+    }
+
+    const verified = await verifyPaystackPayment(verifyRef);
     if (!verified.ok) {
       return { ok: false, error: verified.error };
     }
@@ -112,17 +124,16 @@ export async function fulfillOrderPayment(
       return { ok: false, error: "Payment was not successful" };
     }
 
-    const paystackRef = verified.reference || reference;
+    const paystackRef = verified.reference || verifyRef;
 
     let order =
       (await findOrderByPaystackReference(paystackRef)) ??
       (await findOrderByPaystackReference(reference)) ??
+      (await findOrderByPaystackReference(verifyRef)) ??
       (await findOrderById(reference));
 
     const metaOrderId =
-      typeof verified.metadata?.order_id === "string"
-        ? verified.metadata.order_id
-        : null;
+      metadataOrderId(verified.metadata) ?? hintedOrderId;
     if (!order && metaOrderId) {
       order = await findOrderById(metaOrderId);
     }

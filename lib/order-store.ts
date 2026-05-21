@@ -156,6 +156,29 @@ export async function expireDuePendingOrders(): Promise<number> {
   return count;
 }
 
+export async function updateOrderPaystackReference(
+  orderId: string,
+  paystackReference: string,
+): Promise<void> {
+  const order = await findOrderById(orderId);
+  if (!order) throw new Error("Order not found");
+  if (order.status !== "pending") return;
+
+  const updated: Order = { ...order, paystackReference };
+
+  if (!usesSupabase()) {
+    await json.jsonUpdateOrder(updated);
+    return;
+  }
+
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ paystack_reference: paystackReference })
+    .eq("id", orderId);
+  if (error) throw new Error(error.message);
+}
+
 export async function confirmOrderPayment(
   orderId: string,
   paystackReference: string,

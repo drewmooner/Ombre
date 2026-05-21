@@ -1,7 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { markOrderDelivered } from "@/lib/order-store";
+import { fulfillOrderPayment } from "@/lib/checkout/fulfill-payment";
+import {
+  findOrderById,
+  markOrderDelivered,
+} from "@/lib/order-store";
 import { runOrderMaintenance } from "@/lib/order-maintenance";
 import type { FormActionState } from "@/lib/form-action-state";
 
@@ -28,6 +32,43 @@ function actionFailure(e: unknown, fallback: string): OrderActionState {
       : "";
   if (digest.startsWith("NEXT_REDIRECT")) throw e;
   return { error: e instanceof Error ? e.message : fallback };
+}
+
+export async function confirmOrderPaymentAction(
+  _prev: OrderActionState,
+  formData: FormData,
+): Promise<OrderActionState> {
+  try {
+    await requireStoreAction();
+    const orderId = String(formData.get("orderId") ?? "").trim();
+    if (!orderId) return { error: "Order not found" };
+
+    const order = await findOrderById(orderId);
+    if (!order) return { error: "Order not found" };
+    if (order.status !== "pending") {
+      return { error: "Only unpaid orders can be confirmed" };
+    }
+    if (!order.paystackReference) {
+      return { error: "No Paystack reference on this order" };
+    }
+
+    const result = await fulfillOrderPayment(order.paystackReference, {
+      revalidate: true,
+      metadataOrderId: order.id,
+    });
+    if (!result.ok) {
+      return { error: result.error };
+    }
+
+    revalidateOrderPaths();
+    return {
+      success: result.alreadyPaid
+        ? "Order was already marked paid"
+        : "Payment confirmed — order is now paid",
+    };
+  } catch (e) {
+    return actionFailure(e, "Could not confirm payment");
+  }
 }
 
 export async function markOrderDeliveredAction(

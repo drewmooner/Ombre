@@ -4,6 +4,7 @@ import { Fragment, useState } from "react";
 import Image from "next/image";
 import { useActionState } from "react";
 import {
+  confirmOrderPaymentAction,
   markOrderDeliveredAction,
   type OrderActionState,
 } from "@/lib/store/order-actions";
@@ -32,6 +33,10 @@ function StatusBadge({ status }: { status: Order["status"] }) {
 }
 
 function OrderDetailPanel({ order }: { order: Order }) {
+  const [confirmState, confirmAction, confirmPending] = useActionState(
+    confirmOrderPaymentAction,
+    initial,
+  );
   const [deliveredState, deliveredAction, deliveredPending] = useActionState(
     markOrderDeliveredAction,
     initial,
@@ -114,6 +119,18 @@ function OrderDetailPanel({ order }: { order: Order }) {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
+        {order.status === "pending" && order.paystackReference ? (
+          <form action={confirmAction}>
+            <input type="hidden" name="orderId" value={order.id} />
+            <button
+              type="submit"
+              disabled={confirmPending}
+              className="store-order-action-btn store-order-action-btn--primary"
+            >
+              {confirmPending ? "…" : "Confirm payment"}
+            </button>
+          </form>
+        ) : null}
         {order.status === "paid" ? (
           <form action={deliveredAction}>
             <input type="hidden" name="orderId" value={order.id} />
@@ -141,6 +158,12 @@ function OrderDetailPanel({ order }: { order: Order }) {
         ) : null}
       </div>
 
+      {confirmState.success ? (
+        <p className="mt-2 text-xs text-emerald-800">{confirmState.success}</p>
+      ) : null}
+      {confirmState.error ? (
+        <p className="mt-2 text-xs text-red-700">{confirmState.error}</p>
+      ) : null}
       {deliveredState.success ? (
         <p className="mt-2 text-xs text-emerald-800">{deliveredState.success}</p>
       ) : null}

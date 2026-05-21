@@ -215,7 +215,14 @@ async function setupDatabase(): Promise<void> {
     await runSchemaMigration();
   }
 
-  await ensureProductImagesBucket();
+  try {
+    await ensureProductImagesBucket();
+  } catch (e) {
+    console.warn(
+      "[setup] Product images bucket setup failed (uploads may still work if bucket exists):",
+      e instanceof Error ? e.message : e,
+    );
+  }
   await seedIfEmpty();
 }
 

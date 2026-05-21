@@ -252,6 +252,11 @@ export async function startCheckout(
       return { error: init.error };
     }
 
+    if (init.reference && init.reference !== ref) {
+      const { updateOrderPaystackReference } = await import("@/lib/order-store");
+      await updateOrderPaystackReference(order.id, init.reference);
+    }
+
     const emailResult = await sendOrderAwaitingPaymentEmail(
       order,
       init.authorizationUrl,
