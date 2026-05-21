@@ -32,6 +32,15 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# prisma
+/generated
+
+# local product data (optional: commit data/products.json to seed production)
+/data/products.json
+/data/otp-challenges.json
+/data/shop-users.json
 
 # vercel
 .vercel

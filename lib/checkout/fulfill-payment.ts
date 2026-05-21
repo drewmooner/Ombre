@@ -1,0 +1,146 @@
+import { revalidatePath } from "next/cache";
+import { isCheckoutSimulateEnabled } from "@/lib/checkout/checkout-mode";
+import { sendPaymentReceiptIfNeeded } from "@/lib/email/order-emails";
+import {
+  confirmOrderPayment,
+  findOrderById,
+  findOrderByPaystackReference,
+} from "@/lib/order-store";
+import { verifyPaystackPayment } from "@/lib/paystack";
+
+export type FulfillPaymentResult =
+  | { ok: true; orderId: string; alreadyPaid: boolean }
+  | { ok: false; error: string };
+
+export type FulfillPaymentOptions = {
+  /**
+   * When false, skip cache revalidation (required for /checkout/complete page render).
+   * Use true in Server Actions and Route Handlers only.
+   */
+  revalidate?: boolean;
+};
+
+export function revalidateAfterPayment() {
+  revalidatePath("/", "layout");
+  revalidatePath("/");
+  revalidatePath("/cart");
+  revalidatePath("/store/orders");
+  revalidatePath("/account/orders");
+}
+
+function maybeRevalidateAfterPayment(options?: FulfillPaymentOptions) {
+  if (options?.revalidate === false) return;
+  revalidateAfterPayment();
+}
+
+async function confirmAndSendReceipt(
+  orderId: string,
+  paystackReference: string,
+  options?: FulfillPaymentOptions,
+): Promise<FulfillPaymentResult> {
+  const { order: paidOrder, alreadyPaid } = await confirmOrderPayment(
+    orderId,
+    paystackReference,
+  );
+
+  const emailResult = await sendPaymentReceiptIfNeeded(paidOrder.id);
+  if (!emailResult.ok && !("skipped" in emailResult && emailResult.skipped)) {
+    console.warn("[checkout] Payment receipt email failed:", emailResult.error);
+  }
+
+  maybeRevalidateAfterPayment(options);
+  return { ok: true, orderId: paidOrder.id, alreadyPaid };
+}
+
+/** Local test payment — no Paystack API or webhook. Requires CHECKOUT_SIMULATE_PAYMENT. */
+export async function fulfillOrderPaymentSimulated(
+  reference: string,
+  options?: FulfillPaymentOptions,
+): Promise<FulfillPaymentResult> {
+  if (!isCheckoutSimulateEnabled()) {
+    return { ok: false, error: "Payment simulation is not enabled" };
+  }
+
+  const order =
+    (await findOrderByPaystackReference(reference)) ??
+    (await findOrderById(reference));
+
+  if (!order) {
+    return { ok: false, error: "Order not found" };
+  }
+
+  if (order.status === "expired") {
+    return { ok: false, error: "This order has expired" };
+  }
+
+  if (order.status === "paid" || order.status === "delivered") {
+    await sendPaymentReceiptIfNeeded(order.id);
+    maybeRevalidateAfterPayment(options);
+    return { ok: true, orderId: order.id, alreadyPaid: true };
+  }
+
+  try {
+    return await confirmAndSendReceipt(
+      order.id,
+      order.paystackReference ?? reference,
+      options,
+    );
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Could not confirm simulated payment",
+    };
+  }
+}
+
+export async function fulfillOrderPayment(
+  reference: string,
+  options?: FulfillPaymentOptions,
+): Promise<FulfillPaymentResult> {
+  if (isCheckoutSimulateEnabled()) {
+    return fulfillOrderPaymentSimulated(reference, options);
+  }
+
+  const verified = await verifyPaystackPayment(reference);
+  if (!verified.ok) {
+    return { ok: false, error: verified.error };
+  }
+  if (!verified.paid) {
+    return { ok: false, error: "Payment was not successful" };
+  }
+
+  let order =
+    (await findOrderByPaystackReference(reference)) ??
+    (await findOrderById(reference));
+
+  const metaOrderId =
+    typeof verified.metadata?.order_id === "string"
+      ? verified.metadata.order_id
+      : null;
+  if (!order && metaOrderId) {
+    order = await findOrderById(metaOrderId);
+  }
+
+  if (!order) {
+    return { ok: false, error: "Order not found for this payment" };
+  }
+
+  if (verified.amountKobo !== order.total * 100) {
+    return { ok: false, error: "Payment amount does not match order total" };
+  }
+
+  if (order.status === "paid" || order.status === "delivered") {
+    await sendPaymentReceiptIfNeeded(order.id);
+    maybeRevalidateAfterPayment(options);
+    return { ok: true, orderId: order.id, alreadyPaid: true };
+  }
+
+  try {
+    return await confirmAndSendReceipt(order.id, reference, options);
+  } catch (e) {
+    return {
+      ok: false,
+      error: e instanceof Error ? e.message : "Could not confirm payment",
+    };
+  }
+}

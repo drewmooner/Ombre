@@ -1,0 +1,45 @@
+[
+  {
+    "id": "7b8315bf-0139-41be-b894-23d815aac3da",
+    "customerId": "7f63be27-4ce4-4bec-8a5d-5537860c87ab",
+    "customerEmail": "princewillroberts@gmail.com",
+    "items": [
+      {
+        "productId": "ae404673-3bfd-4345-b7db-86c392dbca7b",
+        "slug": "handkerchief-2pcs-3",
+        "name": "Handkerchief 2pcs 3",
+        "price": 12000,
+        "quantity": 1,
+        "image": "/uploads/1779301634918-5513y06.jpg",
+        "size": "6-16"
+      },
+      {
+        "productId": "95bba037-3b69-4225-bda0-30ff214946bd",
+        "slug": "handkerchief-2pcs-2",
+        "name": "Handkerchief 2pcs 2",
+        "price": 12000,
+        "quantity": 1,
+        "image": "/uploads/1779301596169-ruvaz0d.jpg",
+        "size": "6-16"
+      }
+    ],
+    "subtotal": 24000,
+    "shippingFee": 0,
+    "total": 24000,
+    "delivery": {
+      "fullName": "princewill robert",
+      "email": "princewillroberts@gmail.com",
+      "phone": "09021016462",
+      "addressLine": "12 nwaniba uyo",
+      "city": "uyo",
+      "state": "Akwa Ibom",
+      "method": "doorstep"
+    },
+    "status": "delivered",
+    "createdAt": "2026-05-21T00:24:48.285Z",
+    "expiresAt": "2026-05-21T01:09:48.285Z",
+    "paidAt": "2026-05-21T00:24:48.308Z",
+    "deliveredAt": "2026-05-21T00:30:34.673Z",
+    "paystackReference": "0ad155bb-16a3-4787-a2fc-663f3113060d"
+  }
+]
