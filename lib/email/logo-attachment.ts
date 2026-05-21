@@ -14,13 +14,32 @@ export type ResendLogoAttachment = {
   content_id: string;
 };
 
-let cachedAttachment: ResendLogoAttachment | null = null;
+let cachedAttachment: ResendLogoAttachment | null | undefined;
 
-export function getEmailLogoAttachment(): ResendLogoAttachment {
-  if (cachedAttachment) return cachedAttachment;
+function readLogoBytes(): Buffer | null {
+  for (const filePath of [
+    join(process.cwd(), "public", "logo.png"),
+    join(process.cwd(), "app", "logo.png"),
+  ]) {
+    try {
+      return readFileSync(filePath);
+    } catch {
+      /* try next path */
+    }
+  }
+  return null;
+}
 
-  const path = join(process.cwd(), "public", "logo.png");
-  const buf = readFileSync(path);
+export function getEmailLogoAttachment(): ResendLogoAttachment | null {
+  if (cachedAttachment !== undefined) return cachedAttachment;
+
+  const buf = readLogoBytes();
+  if (!buf) {
+    console.warn("[email] Logo file missing — sending without inline attachment");
+    cachedAttachment = null;
+    return null;
+  }
+
   cachedAttachment = {
     filename: "logo.png",
     content: buf.toString("base64"),
@@ -32,5 +51,8 @@ export function getEmailLogoAttachment(): ResendLogoAttachment {
 export function emailBrandLogoHtml(
   width = EMAIL_BRAND_LOGO_WIDTH,
 ): string {
+  if (!getEmailLogoAttachment()) {
+    return `<p style="margin:0;font-family:Georgia,serif;font-size:26px;color:#722f37;">Ombré</p>`;
+  }
   return `<img src="cid:${EMAIL_LOGO_CID}" alt="Ombré" width="${width}" style="display:block;margin:0 auto 8px;max-width:${width}px;height:auto;" />`;
 }

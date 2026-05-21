@@ -99,47 +99,51 @@ export async function fulfillOrderPayment(
   reference: string,
   options?: FulfillPaymentOptions,
 ): Promise<FulfillPaymentResult> {
-  if (isCheckoutSimulateEnabled()) {
-    return fulfillOrderPaymentSimulated(reference, options);
-  }
-
-  const verified = await verifyPaystackPayment(reference);
-  if (!verified.ok) {
-    return { ok: false, error: verified.error };
-  }
-  if (!verified.paid) {
-    return { ok: false, error: "Payment was not successful" };
-  }
-
-  let order =
-    (await findOrderByPaystackReference(reference)) ??
-    (await findOrderById(reference));
-
-  const metaOrderId =
-    typeof verified.metadata?.order_id === "string"
-      ? verified.metadata.order_id
-      : null;
-  if (!order && metaOrderId) {
-    order = await findOrderById(metaOrderId);
-  }
-
-  if (!order) {
-    return { ok: false, error: "Order not found for this payment" };
-  }
-
-  if (verified.amountKobo !== order.total * 100) {
-    return { ok: false, error: "Payment amount does not match order total" };
-  }
-
-  if (order.status === "paid" || order.status === "delivered") {
-    await sendPaymentReceiptIfNeeded(order.id);
-    maybeRevalidateAfterPayment(options);
-    return { ok: true, orderId: order.id, alreadyPaid: true };
-  }
-
   try {
-    return await confirmAndSendReceipt(order.id, reference, options);
+    if (isCheckoutSimulateEnabled()) {
+      return await fulfillOrderPaymentSimulated(reference, options);
+    }
+
+    const verified = await verifyPaystackPayment(reference);
+    if (!verified.ok) {
+      return { ok: false, error: verified.error };
+    }
+    if (!verified.paid) {
+      return { ok: false, error: "Payment was not successful" };
+    }
+
+    const paystackRef = verified.reference || reference;
+
+    let order =
+      (await findOrderByPaystackReference(paystackRef)) ??
+      (await findOrderByPaystackReference(reference)) ??
+      (await findOrderById(reference));
+
+    const metaOrderId =
+      typeof verified.metadata?.order_id === "string"
+        ? verified.metadata.order_id
+        : null;
+    if (!order && metaOrderId) {
+      order = await findOrderById(metaOrderId);
+    }
+
+    if (!order) {
+      return { ok: false, error: "Order not found for this payment" };
+    }
+
+    if (verified.amountKobo !== order.total * 100) {
+      return { ok: false, error: "Payment amount does not match order total" };
+    }
+
+    if (order.status === "paid" || order.status === "delivered") {
+      await sendPaymentReceiptIfNeeded(order.id);
+      maybeRevalidateAfterPayment(options);
+      return { ok: true, orderId: order.id, alreadyPaid: true };
+    }
+
+    return await confirmAndSendReceipt(order.id, paystackRef, options);
   } catch (e) {
+    console.error("[checkout] fulfillOrderPayment failed:", e);
     return {
       ok: false,
       error: e instanceof Error ? e.message : "Could not confirm payment",
