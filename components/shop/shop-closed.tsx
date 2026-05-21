@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/brand-logo";
 import {
   WHATSAPP_DEFAULT_MESSAGE,
   buildWhatsAppUrl,
@@ -6,9 +7,7 @@ import {
 export function ShopClosed() {
   return (
     <section className="shop-closed mx-auto flex max-w-lg flex-col items-center px-4 py-20 text-center sm:px-6 sm:py-28">
-      <p className="shop-closed-eyebrow font-display text-sm font-medium tracking-wide text-[var(--accent-soft)]">
-        Ombré
-      </p>
+      <BrandLogo size="shopClosed" className="mb-2" />
       <h1 className="shop-closed-title font-display mt-3 text-3xl font-medium text-[var(--accent)] sm:text-4xl">
         We&apos;re restocking
       </h1>

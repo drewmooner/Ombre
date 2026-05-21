@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { BrandLogo } from "./brand-logo";
 import { SearchIcon } from "./icons";
 import { CartLink } from "./shop/cart-link";
 import { HeaderAuth } from "./shop/header-auth";
@@ -30,9 +31,7 @@ export function Header({ customer = null }: HeaderProps) {
           className="col-start-1 row-start-1 flex min-w-0 shrink-0 items-center gap-2"
           aria-label="Ombré home"
         >
-          <span className="morph-btn brand-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg font-semibold sm:h-11 sm:w-11 sm:text-xl">
-            O
-          </span>
+          <BrandLogo size="header" priority />
           <span className="site-header-brand-name truncate font-display text-xl font-medium tracking-tight sm:text-2xl">
             Ombré
           </span>

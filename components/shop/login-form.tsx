@@ -8,6 +8,7 @@ import {
   type ShopAuthState,
 } from "@/lib/shop/actions";
 import { OTP_MIN_RESEND_SECONDS } from "@/lib/otp-constants";
+import { BrandLogo } from "@/components/brand-logo";
 import { MorphButton } from "@/components/morph-button";
 import {
   useActionRedirect,
@@ -127,7 +128,8 @@ export function ShopLoginForm({
       >
         ×
       </button>
-      <div>
+      <div className="text-center sm:text-left">
+        <BrandLogo size="auth" className="mx-auto mb-4 sm:mx-0" />
         <h1 className="font-display text-2xl font-medium text-[var(--accent)] pr-8">
           {otpSent ? "Check your email" : forCheckout ? "Sign in to checkout" : "Sign in"}
         </h1>

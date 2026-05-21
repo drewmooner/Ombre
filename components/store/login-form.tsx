@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { loginStore, type ActionState } from "@/lib/store/actions";
 import { EyeIcon, EyeSlashIcon } from "@/components/icons";
+import { BrandLogo } from "@/components/brand-logo";
 import { MorphButton } from "@/components/morph-button";
 import { ActionAlerts } from "./action-alerts";
 import { useActionRedirect } from "./use-action-redirect";
@@ -15,7 +16,8 @@ export function StoreLoginForm() {
 
   return (
     <form action={action} className="morph-surface mx-auto max-w-sm space-y-6 rounded-3xl p-8">
-      <div>
+      <div className="text-center">
+        <BrandLogo size="auth" className="mx-auto mb-4" />
         <h1 className="font-display text-2xl font-medium text-[var(--accent)]">Store</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage Ombré products.</p>
       </div>

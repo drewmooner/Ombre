@@ -1,3 +1,4 @@
+import { emailBrandLogoHtml } from "@/lib/brand-logo";
 import { envVar } from "@/lib/env";
 import { fetchResend, formatNetworkError } from "@/lib/email/resend-fetch";
 
@@ -107,7 +108,7 @@ function buildOmbreOtpEmail(code: string) {
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:420px;background-color:#fffbf9;border:1px solid rgba(114,47,55,0.12);border-radius:16px;overflow:hidden;">
           <tr>
             <td style="background:linear-gradient(180deg,rgba(114,47,55,0.08) 0%,transparent 100%);padding:28px 28px 20px;text-align:center;border-bottom:1px solid rgba(114,47,55,0.08);">
-              <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:500;color:#722f37;letter-spacing:0.02em;">Ombré</p>
+              ${emailBrandLogoHtml()}
               <p style="margin:8px 0 0;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#9a5a63;">Sign in</p>
             </td>
           </tr>

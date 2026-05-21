@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandLogo } from "@/components/brand-logo";
 import { LogoutButton } from "./logout-button";
 import { ShopOpenToggle } from "./shop-open-toggle";
 
@@ -13,9 +14,7 @@ export function StoreNav({ shopOpen, activeOrderCount = 0 }: StoreNavProps) {
     <header className="store-header">
       <div className="store-header-inner store-header-inner--responsive">
         <Link href="/store/catalogs" className="store-header-brand min-w-0">
-          <span className="morph-btn brand-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-xl font-display text-lg font-semibold">
-            O
-          </span>
+          <BrandLogo size="storeNav" />
           <span className="store-header-brand-name">Ombré</span>
           <span className="store-header-label">Store</span>
         </Link>

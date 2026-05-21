@@ -6,6 +6,7 @@ import {
   markReceiptEmailSent,
   findOrderById,
 } from "@/lib/order-store";
+import { emailBrandLogoHtml } from "@/lib/brand-logo";
 import { sendEmail, type SendEmailResult } from "@/lib/email/send-email";
 
 function orderRecipientEmail(order: Order): string {
@@ -58,7 +59,7 @@ function emailShell(title: string, bodyHtml: string): string {
     <tr><td align="center">
       <table role="presentation" width="100%" style="max-width:480px;background:#fffbf9;border:1px solid rgba(114,47,55,0.12);border-radius:16px;">
         <tr><td style="padding:24px 28px 8px;text-align:center;border-bottom:1px solid rgba(114,47,55,0.08);">
-          <p style="margin:0;font-family:Georgia,serif;font-size:26px;color:#722f37;">Ombré</p>
+          ${emailBrandLogoHtml()}
           <p style="margin:6px 0 0;font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#9a5a63;">${title}</p>
         </td></tr>
         <tr><td style="padding:24px 28px;">${bodyHtml}</td></tr>
