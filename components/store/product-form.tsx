@@ -73,6 +73,8 @@ export function ProductForm({
     }
   });
 
+  useActionRedirect(state, pending);
+
   async function uploadFile(file: File) {
     setUploadError(null);
     const formData = new FormData();

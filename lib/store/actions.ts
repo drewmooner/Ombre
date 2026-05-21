@@ -359,6 +359,7 @@ export async function updateProduct(
     revalidatePath(`/product/${product.slug}`);
     revalidatePath(`/store/catalogs/${catalogId}/products/${productId}/edit`);
     return {
+      success: `"${product.name}" saved`,
       redirectTo: `/store/catalogs/${catalogId}?productUpdated=1`,
     };
   } catch (e) {

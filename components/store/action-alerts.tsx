@@ -17,7 +17,7 @@ export function ActionAlerts({ state, className = "" }: ActionAlertsProps) {
           {state.error}
         </p>
       )}
-      {state.success && !state.redirectTo && (
+      {state.success && (
         <p className={`store-alert store-alert-success ${className}`.trim()}>
           {state.success}
         </p>
