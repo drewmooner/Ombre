@@ -28,6 +28,8 @@ export async function sendEmail(options: {
   subject: string;
   html: string;
   text?: string;
+  /** When false, omit inline logo attachment. Defaults to true. */
+  includeLogo?: boolean;
 }): Promise<SendEmailResult> {
   const key = getResendApiKey();
   if (!key) {
