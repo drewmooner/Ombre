@@ -1,5 +1,8 @@
 -- Run once in Supabase Dashboard → SQL Editor if automatic setup fails.
 -- https://supabase.com/dashboard/project/jcfeslosddylavlaumjw/sql/new
+--
+-- Storage: the app also creates a public bucket named `product-images` on first
+-- deploy (see lib/supabase/storage.ts). Admin uploads are stored there, not in Postgres.
 
 create table if not exists public.catalogs (
   id text primary key,

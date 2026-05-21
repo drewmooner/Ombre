@@ -15,6 +15,7 @@ import {
 } from "./mappers";
 import { isSupabaseConfigured } from "./config";
 import { isSchemaApplied, runSchemaMigration } from "./migrate";
+import { ensureProductImagesBucket } from "./storage";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 
@@ -214,6 +215,7 @@ async function setupDatabase(): Promise<void> {
     await runSchemaMigration();
   }
 
+  await ensureProductImagesBucket();
   await seedIfEmpty();
 }
 

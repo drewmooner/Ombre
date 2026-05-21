@@ -1,6 +1,10 @@
 import { randomUUID } from "crypto";
 import type { Product } from "./product-types";
 import { prepareDb, usesSupabase } from "./db-backend";
+import {
+  deleteRemovedImageUrls,
+  deleteShopImageUrls,
+} from "./supabase/storage";
 import * as json from "./json-data";
 import { slugify } from "./slug";
 import { getSupabaseAdmin } from "./supabase/admin";
@@ -118,6 +122,8 @@ export async function updateProductRecord(
 export async function deleteProductRecord(id: string): Promise<Product> {
   const product = await findProductById(id);
   if (!product) throw new Error("Product not found");
+
+  await deleteShopImageUrls(product.images);
 
   if (!usesSupabase()) return json.jsonDeleteProduct(id);
   await prepareDb();

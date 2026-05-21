@@ -2,6 +2,10 @@ import { randomUUID } from "crypto";
 import type { Catalog } from "./catalog-types";
 import { inferDefaultProductName } from "./catalog-product-defaults";
 import { prepareDb, usesSupabase } from "./db-backend";
+import {
+  deleteRemovedImageUrls,
+  deleteShopImageUrls,
+} from "./supabase/storage";
 import * as json from "./json-data";
 import { slugify } from "./slug";
 import { getSupabaseAdmin } from "./supabase/admin";
@@ -95,6 +99,11 @@ export async function updateCatalogRecord(
       inferDefaultProductName(input.name, slug),
   };
 
+  await deleteRemovedImageUrls(
+    current.image ? [current.image] : [],
+    updated.image ? [updated.image] : [],
+  );
+
   if (!usesSupabase()) return json.jsonUpdateCatalog(updated);
   await prepareDb();
   const { error } = await getSupabaseAdmin()
@@ -108,6 +117,8 @@ export async function updateCatalogRecord(
 export async function deleteCatalogRecord(id: string): Promise<Catalog> {
   const catalog = await findCatalogById(id);
   if (!catalog) throw new Error("Catalog not found");
+
+  await deleteShopImageUrls(catalog.image ? [catalog.image] : []);
 
   if (!usesSupabase()) return json.jsonDeleteCatalog(id);
   await prepareDb();

@@ -1,8 +1,7 @@
 "use server";
 
-import { mkdir, writeFile } from "fs/promises";
-import path from "path";
 import { revalidatePath } from "next/cache";
+import { uploadShopImage } from "@/lib/supabase/storage";
 import {
   createStoreSession,
   destroyStoreSession,
@@ -105,23 +104,7 @@ export async function uploadProductImage(
     return { error: "No file selected" };
   }
 
-  if (!file.type.startsWith("image/")) {
-    return { error: "File must be an image" };
-  }
-
-  if (file.size > 5 * 1024 * 1024) {
-    return { error: "Image must be under 5MB" };
-  }
-
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadsDir, { recursive: true });
-
-  const ext = path.extname(file.name) || ".jpg";
-  const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}${ext}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(uploadsDir, safeName), buffer);
-
-  return { url: `/uploads/${safeName}` };
+  return uploadShopImage(file);
 }
 
 type CatalogFormInput = {
