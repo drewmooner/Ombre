@@ -1530,9 +1530,9 @@ video {
   }
 
   .store-header-shop-toggle-form {
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
+    flex-direction: row;
+    align-items: center;
+    gap: 0;
   }
 
   .store-page-header .morph-btn,

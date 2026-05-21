@@ -21,7 +21,7 @@ export function ShopOpenToggle({ shopOpen }: ShopOpenToggleProps) {
     <div className="store-header-shop-toggle" title={hint}>
       <form action={action} className="store-header-shop-toggle-form">
         <span
-          className={`store-header-shop-label ${isOpen ? "store-header-shop-label--on" : "store-header-shop-label--off"}`}
+          className={`store-header-shop-label hidden md:inline ${isOpen ? "store-header-shop-label--on" : "store-header-shop-label--off"}`}
         >
           {pending ? "…" : isOpen ? "On" : "Off"}
         </span>

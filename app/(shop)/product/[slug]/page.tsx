@@ -81,6 +81,21 @@ export default async function ProductPage({ params }: ProductPageProps) {
             )}
           </div>
 
+          <div className="mt-5">
+            <p className="text-xs font-semibold uppercase tracking-wider text-[var(--muted)]">
+              In stock
+            </p>
+            {product.inStock && product.pieces > 0 ? (
+              <p className="mt-2 text-sm font-semibold text-[var(--accent)]">
+                {product.pieces} {product.pieces === 1 ? "pc" : "pcs"} available
+              </p>
+            ) : (
+              <p className="mt-2 text-sm font-semibold text-[var(--muted)]">
+                Out of stock
+              </p>
+            )}
+          </div>
+
           <ul className="mt-8 space-y-2 border-t border-[rgba(var(--accent-rgb),0.12)] pt-8 text-sm text-[var(--muted)]">
             {product.details.map((d) => (
               <li key={d} className="flex gap-2">
@@ -101,9 +116,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
           </div>
 
           {!product.inStock && (
-            <p className="mt-4 text-sm text-[var(--muted)]">
-              This item is currently unavailable. WhatsApp us to join the restock
-              list.
+            <p className="mt-4 text-sm leading-relaxed text-[var(--muted)]">
+              This item is currently unavailable. Message us on WhatsApp to ask
+              about restocking.
             </p>
           )}
         </div>
