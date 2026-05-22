@@ -13,7 +13,6 @@ import {
   updateCatalogRecord,
 } from "@/lib/catalog-store";
 import {
-  countProductsByCatalogId,
   createProductRecord,
   deductProductPieces,
   deleteProductRecord,
@@ -183,17 +182,14 @@ export async function deleteCatalogAction(
 ): Promise<ActionState> {
   await requireStoreAction();
 
-  const count = await countProductsByCatalogId(id);
-  if (count > 0) {
-    return {
-      error: `Remove ${count} product${count === 1 ? "" : "s"} from this catalog first.`,
-    };
-  }
-
   try {
-    const catalog = await deleteCatalogRecord(id);
+    const { catalog, deletedProductCount } = await deleteCatalogRecord(id);
     revalidateShop();
-    return { success: `"${catalog.name}" removed` };
+    const productNote =
+      deletedProductCount > 0
+        ? ` and ${deletedProductCount} product${deletedProductCount === 1 ? "" : "s"}`
+        : "";
+    return { success: `"${catalog.name}" removed${productNote}` };
   } catch (e) {
     return actionFailure(e, "Could not delete catalog");
   }

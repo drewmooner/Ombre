@@ -8,8 +8,14 @@ import {
 } from "./supabase/storage";
 import * as json from "./json-data";
 import { slugify } from "./slug";
+import { deleteProductsByCatalogId } from "./product-store";
 import { getSupabaseAdmin } from "./supabase/admin";
 import { catalogFromRow, catalogToRow } from "./supabase/mappers";
+
+export type DeleteCatalogResult = {
+  catalog: Catalog;
+  deletedProductCount: number;
+};
 
 export async function listCatalogs(): Promise<Catalog[]> {
   if (!usesSupabase()) return json.jsonListCatalogs();
@@ -114,15 +120,21 @@ export async function updateCatalogRecord(
   return updated;
 }
 
-export async function deleteCatalogRecord(id: string): Promise<Catalog> {
+export async function deleteCatalogRecord(id: string): Promise<DeleteCatalogResult> {
   const catalog = await findCatalogById(id);
   if (!catalog) throw new Error("Catalog not found");
 
+  const deletedProductCount = await deleteProductsByCatalogId(id);
+
   await deleteShopImageUrls(catalog.image ? [catalog.image] : []);
 
-  if (!usesSupabase()) return json.jsonDeleteCatalog(id);
+  if (!usesSupabase()) {
+    const removed = await json.jsonDeleteCatalog(id);
+    return { catalog: removed, deletedProductCount };
+  }
+
   await prepareDb();
   const { error } = await getSupabaseAdmin().from("catalogs").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  return catalog;
+  return { catalog, deletedProductCount };
 }

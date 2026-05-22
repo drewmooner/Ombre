@@ -82,7 +82,14 @@ function CatalogCard({
             Delete
           </button>
         ) : (
-          <span className="flex gap-1">
+          <span className="flex flex-col items-end gap-1">
+            {catalog.productCount > 0 ? (
+              <span className="max-w-[11rem] rounded-lg bg-black/55 px-2 py-1 text-[10px] leading-snug text-white backdrop-blur-sm">
+                Deletes {catalog.productCount} product
+                {catalog.productCount === 1 ? "" : "s"} too
+              </span>
+            ) : null}
+            <span className="flex gap-1">
             <form action={action}>
               <button
                 type="submit"
@@ -102,6 +109,7 @@ function CatalogCard({
             >
               Cancel
             </button>
+            </span>
           </span>
         )}
       </span>

@@ -156,6 +156,17 @@ export async function updateProductRecord(
   return updated;
 }
 
+/** Deletes every product in a catalog (storage images + rows). */
+export async function deleteProductsByCatalogId(
+  catalogId: string,
+): Promise<number> {
+  const products = await listProductsByCatalogId(catalogId);
+  for (const product of products) {
+    await deleteProductRecord(product.id);
+  }
+  return products.length;
+}
+
 export async function deleteProductRecord(id: string): Promise<Product> {
   const product = await findProductById(id);
   if (!product) throw new Error("Product not found");
