@@ -24,6 +24,30 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: turbopackRoot,
   },
+  async redirects() {
+    return [
+      {
+        source: "/checkout/success",
+        destination: "/checkout/complete",
+        permanent: false,
+      },
+      {
+        source: "/payment/complete",
+        destination: "/checkout/complete",
+        permanent: false,
+      },
+      {
+        source: "/checkout/callback",
+        destination: "/checkout/complete",
+        permanent: false,
+      },
+      {
+        source: "/payment/callback",
+        destination: "/checkout/complete",
+        permanent: false,
+      },
+    ];
+  },
   images: {
     remotePatterns: [
       {

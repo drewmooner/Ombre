@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
 import { BrandLogo } from "@/components/brand-logo";
@@ -18,10 +18,9 @@ export function CheckoutCompleteClient({
   const { clearCart } = useCart();
   const router = useRouter();
 
-  useEffect(() => {
-    if (!success) return;
+  useLayoutEffect(() => {
     clearCart();
-    router.refresh();
+    if (success) router.refresh();
   }, [success, clearCart, router]);
 
   return (

@@ -29,7 +29,7 @@ export function CheckoutForm({
   checkoutReady,
   simulateCheckout,
 }: CheckoutFormProps) {
-  const { items, subtotal, itemCount } = useCart();
+  const { items, subtotal, itemCount, clearCart } = useCart();
   const [state, formAction, pending] = useActionState(startCheckout, initial);
   const total = subtotal;
 
@@ -48,7 +48,9 @@ export function CheckoutForm({
     [items],
   );
 
-  useActionRedirect(state, pending);
+  useActionRedirect(state, pending, () => {
+    if (state.redirectTo) clearCart();
+  });
 
   if (itemCount === 0) {
     return (

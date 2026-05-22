@@ -1,12 +1,11 @@
 import { redirectToCheckoutComplete } from "@/lib/checkout/redirect-to-complete";
 
-type SuccessRedirectProps = {
+type PaymentCompleteRedirectProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-/** Paystack dashboards often use /checkout/success — forward to /checkout/complete. */
-export default async function CheckoutSuccessRedirectPage({
+export default async function PaymentCompleteRedirectPage({
   searchParams,
-}: SuccessRedirectProps) {
+}: PaymentCompleteRedirectProps) {
   return redirectToCheckoutComplete(searchParams);
 }
