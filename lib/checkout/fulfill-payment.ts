@@ -21,6 +21,8 @@ export type FulfillPaymentOptions = {
   revalidate?: boolean;
   /** From Paystack webhook payload when verify-by-URL reference alone fails. */
   metadataOrderId?: string;
+  /** Skip Resend receipt on this request (e.g. complete page — webhook sends it). */
+  skipReceiptEmail?: boolean;
 };
 
 export function revalidateAfterPayment() {
@@ -46,11 +48,13 @@ async function confirmAndSendReceipt(
     paystackReference,
   );
 
-  const emailResult = await sendPaymentReceiptIfNeeded(paidOrder.id);
-  if (!emailResult.ok) {
-    console.error("[checkout] Payment receipt email failed:", emailResult.error);
-  } else if (!("skipped" in emailResult && emailResult.skipped)) {
-    console.info("[checkout] Payment receipt email sent for order", paidOrder.id);
+  if (!options?.skipReceiptEmail) {
+    const emailResult = await sendPaymentReceiptIfNeeded(paidOrder.id);
+    if (!emailResult.ok) {
+      console.error("[checkout] Payment receipt email failed:", emailResult.error);
+    } else if (!("skipped" in emailResult && emailResult.skipped)) {
+      console.info("[checkout] Payment receipt email sent for order", paidOrder.id);
+    }
   }
 
   maybeRevalidateAfterPayment(options);

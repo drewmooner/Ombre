@@ -1,24 +1,20 @@
 import Link from "next/link";
 import { CheckoutCompleteClient } from "@/components/shop/checkout-complete-client";
 import { fulfillOrderPayment } from "@/lib/checkout/fulfill-payment";
-import { runOrderMaintenance } from "@/lib/order-maintenance";
+import { paymentReferenceFromSearchParams } from "@/lib/checkout/payment-reference";
 
 type CompletePageProps = {
-  searchParams: Promise<{ reference?: string; trxref?: string }>;
+  searchParams: Promise<{
+    reference?: string | string[];
+    trxref?: string | string[];
+  }>;
 };
-
-function paymentReference(
-  searchParams: { reference?: string; trxref?: string },
-): string | null {
-  const ref = searchParams.reference?.trim() || searchParams.trxref?.trim();
-  return ref || null;
-}
 
 export default async function CheckoutCompletePage({
   searchParams,
 }: CompletePageProps) {
   const params = await searchParams;
-  const reference = paymentReference(params);
+  const reference = paymentReferenceFromSearchParams(params);
 
   if (!reference) {
     return (
@@ -37,9 +33,8 @@ export default async function CheckoutCompletePage({
   try {
     const result = await fulfillOrderPayment(reference, {
       revalidate: false,
+      skipReceiptEmail: true,
     });
-
-    await runOrderMaintenance();
 
     success = result.ok;
     if (!result.ok) {

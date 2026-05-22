@@ -233,7 +233,8 @@ export async function startCheckout(
       email: delivery.email,
       amountKobo: order.total * 100,
       reference: ref,
-      callbackUrl: `${origin}/checkout/complete?reference=${encodeURIComponent(ref)}`,
+      // Paystack appends reference & trxref — do not add ?reference= here (duplicates break the URL)
+      callbackUrl: `${origin}/checkout/complete`,
       metadata: { order_id: order.id, customer_id: customer.id },
     });
 
