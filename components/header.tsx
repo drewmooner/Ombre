@@ -27,21 +27,40 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
 
   return (
     <header className="site-header">
-      <div className="morph-surface site-header-bar mx-auto grid max-w-7xl grid-cols-[1fr_auto] items-center gap-3 overflow-visible rounded-2xl px-3 py-3 sm:grid-cols-[auto_1fr_auto] sm:gap-4 sm:px-6 sm:py-3">
+      <div className="morph-surface site-header-bar mx-auto grid max-w-7xl grid-cols-1 gap-2.5 overflow-visible rounded-2xl px-3 py-3 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-4 sm:px-6 sm:py-3">
         <Link
           href="/"
-          className="col-start-1 row-start-1 flex min-w-0 shrink-0 items-center gap-2"
+          className="site-header-brand flex min-w-0 items-center gap-2 sm:col-start-1 sm:row-start-1"
           aria-label="Ombré home"
         >
-          <BrandLogo size="header" priority />
-          <span className="site-header-brand-name truncate font-display text-xl font-medium tracking-tight sm:text-2xl">
+          <BrandLogo size="header" priority className="shrink-0" />
+          <span className="site-header-brand-name shrink-0 font-display text-xl font-medium tracking-tight sm:text-2xl">
             Ombré
           </span>
         </Link>
 
+        <div className="site-header-actions flex w-full flex-wrap items-center justify-center gap-1 overflow-visible sm:col-start-3 sm:row-start-1 sm:w-auto sm:flex-nowrap sm:justify-end">
+          <span
+            className="site-header-pill morph-btn hidden items-center justify-center gap-1 rounded-full px-2.5 py-2 text-xs font-medium min-[420px]:inline-flex"
+            title="Nigeria · NGN only"
+          >
+            <span aria-hidden>🇳🇬</span>
+            <span className="hidden min-[400px]:inline">NGN</span>
+          </span>
+
+          <HeaderAuth customer={customer} />
+
+          <OrdersLink
+            signedIn={Boolean(customer)}
+            activeOrderCount={activeOrderCount}
+          />
+
+          <CartLink />
+        </div>
+
         <form
           onSubmit={onSearch}
-          className="relative col-span-2 row-start-2 w-full min-w-0 sm:col-span-1 sm:col-start-2 sm:row-start-1 sm:mx-auto sm:max-w-md"
+          className="relative w-full min-w-0 sm:col-start-2 sm:row-start-1 sm:mx-auto sm:max-w-md"
         >
           <input
             type="search"
@@ -59,25 +78,6 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
             <SearchIcon className="h-4 w-4" />
           </button>
         </form>
-
-        <div className="site-header-actions col-start-2 row-start-1 flex items-center justify-end overflow-visible sm:col-start-3">
-          <span
-            className="morph-btn site-header-pill flex h-10 min-w-10 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium sm:min-w-0 sm:px-3 sm:py-2"
-            title="Nigeria · NGN only"
-          >
-            <span aria-hidden>🇳🇬</span>
-            <span className="hidden min-[400px]:inline">NGN</span>
-          </span>
-
-          <HeaderAuth customer={customer} />
-
-          <OrdersLink
-            signedIn={Boolean(customer)}
-            activeOrderCount={activeOrderCount}
-          />
-
-          <CartLink />
-        </div>
       </div>
     </header>
   );

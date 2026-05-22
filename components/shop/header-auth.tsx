@@ -87,7 +87,7 @@ export function HeaderAuth({ customer }: HeaderAuthProps) {
     return (
       <Link
         href="/login"
-        className="morph-btn shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium text-[var(--muted)] transition-colors hover:text-[var(--accent)] sm:px-3 sm:py-2 sm:text-sm"
+        className="site-header-sign-in morph-btn shrink-0 rounded-full px-2.5 py-1.5 text-xs font-medium text-[var(--muted)] transition-colors hover:text-[var(--accent)] sm:px-3 sm:py-2 sm:text-sm"
       >
         Sign in
       </Link>

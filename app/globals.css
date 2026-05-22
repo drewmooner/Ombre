@@ -180,8 +180,13 @@ body {
     0 1px 0 rgba(var(--accent-rgb), 0.06);
 }
 
+.site-header-brand {
+  flex-shrink: 0;
+}
+
 .site-header-brand-name {
   color: var(--accent);
+  white-space: nowrap;
 }
 
 .site-header-pill {
@@ -1814,6 +1819,40 @@ video {
   .site-header {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+  }
+
+  .site-header-bar {
+    gap: 0.625rem;
+  }
+
+  .site-header-brand {
+    width: 100%;
+  }
+
+  .site-header-brand-name {
+    font-size: 1.25rem;
+  }
+
+  .site-header-actions {
+    gap: 0.25rem;
+  }
+
+  .site-header-action {
+    min-width: 2.4rem;
+    padding: 0.28rem 0.3rem 0.24rem;
+    gap: 0.12rem;
+  }
+
+  .site-header-action__label {
+    font-size: 0.5625rem;
+    letter-spacing: 0.04em;
+    max-width: 3rem;
+  }
+
+  .site-header-sign-in {
+    min-width: auto;
+    padding: 0.35rem 0.55rem !important;
+    font-size: 0.625rem !important;
   }
 
   .site-customer-greeting-text {
