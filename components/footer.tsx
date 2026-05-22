@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import {
@@ -17,7 +18,7 @@ export function Footer() {
           </p>
         </div>
 
-        <div className="flex flex-wrap gap-8 text-sm sm:gap-12">
+        <div className="flex min-w-0 flex-wrap gap-8 text-sm sm:gap-12">
           <div>
             <p className="mb-3 font-medium text-[var(--foreground)]">Shop</p>
             <ul className="space-y-2 text-[var(--muted)]">
@@ -38,7 +39,7 @@ export function Footer() {
               </li>
             </ul>
           </div>
-          <div>
+          <div className="min-w-0 max-w-full">
             <p className="mb-3 font-medium text-[var(--foreground)]">Help</p>
             <ul className="space-y-2 text-[var(--muted)]">
               <li>
@@ -61,7 +62,18 @@ export function Footer() {
                   WhatsApp support
                 </a>
               </li>
-              <li>NGN · Paystack payments</li>
+              <li className="min-w-0 max-w-full">
+                <div className="flex max-w-full flex-col items-start gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-2 sm:gap-y-1">
+                  <span className="shrink-0 whitespace-nowrap">NGN · payments via</span>
+                  <Image
+                    src="/paystack-logo.svg"
+                    alt="Paystack"
+                    width={72}
+                    height={13}
+                    className="h-3.5 w-[4.5rem] max-w-full shrink-0 object-contain object-left"
+                  />
+                </div>
+              </li>
             </ul>
           </div>
         </div>

@@ -57,6 +57,62 @@ def trim_transparent(img: Image.Image, padding: int = 8) -> Image.Image:
     return img.crop((left, top, right, bottom))
 
 
+# Matches --background in globals.css — keeps the mark visible on browser tabs.
+FAVICON_BG = (243, 238, 236, 255)
+
+
+def build_square_icon(
+    mark: Image.Image,
+    size: int,
+    *,
+    padding_ratio: float = 0.1,
+) -> Image.Image:
+    """Center the mark on a square canvas sized for favicons."""
+    mark = mark.convert("RGBA")
+    cropped = trim_transparent(mark, padding=0)
+    bbox = cropped.getbbox()
+    if not bbox:
+        cropped = mark
+    else:
+        cropped = cropped.crop(bbox)
+
+    canvas = Image.new("RGBA", (size, size), FAVICON_BG)
+    pad = max(1, int(size * padding_ratio))
+    inner = size - 2 * pad
+    mw, mh = cropped.size
+    scale = min(inner / mw, inner / mh)
+    nw, nh = max(1, int(mw * scale)), max(1, int(mh * scale))
+    resized = cropped.resize((nw, nh), Image.Resampling.LANCZOS)
+    x = (size - nw) // 2
+    y = (size - nh) // 2
+    canvas.paste(resized, (x, y), resized)
+    return canvas
+
+
+def write_favicon_assets(mark: Image.Image, root: Path) -> None:
+    app = root / "app"
+    app.mkdir(parents=True, exist_ok=True)
+
+    icon_512 = build_square_icon(mark, 512, padding_ratio=0.08)
+    icon_512.save(app / "icon.png", "PNG", optimize=True)
+    print(f"Wrote {app / 'icon.png'} (512x512)")
+
+    apple = build_square_icon(mark, 180, padding_ratio=0.1)
+    apple.save(app / "apple-icon.png", "PNG", optimize=True)
+    print(f"Wrote {app / 'apple-icon.png'} (180x180)")
+
+    favicon_32 = build_square_icon(mark, 32, padding_ratio=0.06)
+    favicon_48 = build_square_icon(mark, 48, padding_ratio=0.06)
+    favicon_16 = build_square_icon(mark, 16, padding_ratio=0.05)
+    favicon_32.save(
+        app / "favicon.ico",
+        format="ICO",
+        sizes=[(16, 16), (32, 32), (48, 48)],
+        append_images=[favicon_16, favicon_48],
+    )
+    print(f"Wrote {app / 'favicon.ico'}")
+
+
 def main() -> None:
     src = Path(sys.argv[1])
     if not src.is_file():
@@ -68,11 +124,12 @@ def main() -> None:
     for dest in (
         ROOT / "app" / "logo.png",
         ROOT / "public" / "logo.png",
-        ROOT / "app" / "icon.png",
     ):
         dest.parent.mkdir(parents=True, exist_ok=True)
         processed.save(dest, "PNG", optimize=True)
         print(f"Wrote {dest} ({processed.width}x{processed.height})")
+
+    write_favicon_assets(processed, ROOT)
 
 
 if __name__ == "__main__":

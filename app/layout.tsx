@@ -24,10 +24,6 @@ export const metadata: Metadata = {
   title: "Ombré — Fashion wears",
   description:
     "Curated fashion for Nigeria — dresses, Ankara pieces, and more quality wears. Shop online in NGN.",
-  icons: {
-    icon: [{ url: "/logo.png", type: "image/png" }],
-    apple: [{ url: "/logo.png", type: "image/png" }],
-  },
 };
 
 export default function RootLayout({
