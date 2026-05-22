@@ -21,42 +21,86 @@ type HeaderAuthProps = {
   customer: ShopCustomer | null;
 };
 
+const VIEWPORT_MARGIN = 12;
+const MENU_GAP = 8;
+const MENU_MAX_WIDTH = 256;
+
 type MenuPosition = {
   top: number;
-  right: number;
+  left: number;
+  width: number;
 };
+
+function clampMenuPosition(
+  trigger: DOMRect,
+  menuWidth: number,
+  menuHeight: number,
+): MenuPosition {
+  const maxWidth = Math.min(
+    MENU_MAX_WIDTH,
+    window.innerWidth - VIEWPORT_MARGIN * 2,
+  );
+  const width = Math.min(menuWidth, maxWidth);
+
+  let left =
+    window.innerWidth < 640
+      ? trigger.left + trigger.width / 2 - width / 2
+      : trigger.right - width;
+
+  left = Math.max(
+    VIEWPORT_MARGIN,
+    Math.min(left, window.innerWidth - width - VIEWPORT_MARGIN),
+  );
+
+  let top = trigger.bottom + MENU_GAP;
+  if (top + menuHeight > window.innerHeight - VIEWPORT_MARGIN) {
+    top = Math.max(VIEWPORT_MARGIN, trigger.top - menuHeight - MENU_GAP);
+  }
+
+  return { top, left, width };
+}
 
 export function HeaderAuth({ customer }: HeaderAuthProps) {
   const [state, action, pending] = useActionState(logoutShopCustomer, {});
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const [menuPos, setMenuPos] = useState<MenuPosition>({ top: 0, right: 0 });
+  const [menuPos, setMenuPos] = useState<MenuPosition>({
+    top: 0,
+    left: 0,
+    width: MENU_MAX_WIDTH,
+  });
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useActionRedirect(state, pending, () => setOpen(false));
 
   useEffect(() => setMounted(true), []);
 
   function updateMenuPosition() {
-    const el = triggerRef.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    setMenuPos({
-      top: rect.bottom + 8,
-      right: Math.max(12, window.innerWidth - rect.right),
-    });
+    const trigger = triggerRef.current;
+    if (!trigger) return;
+    const rect = trigger.getBoundingClientRect();
+    const menuHeight = menuRef.current?.offsetHeight ?? 108;
+    setMenuPos(clampMenuPosition(rect, MENU_MAX_WIDTH, menuHeight));
   }
 
   useLayoutEffect(() => {
     if (!open) return;
-    updateMenuPosition();
-    window.addEventListener("resize", updateMenuPosition);
-    window.addEventListener("scroll", updateMenuPosition, true);
+
+    function measure() {
+      updateMenuPosition();
+    }
+
+    measure();
+    const raf = requestAnimationFrame(measure);
+    window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, true);
     return () => {
-      window.removeEventListener("resize", updateMenuPosition);
-      window.removeEventListener("scroll", updateMenuPosition, true);
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure, true);
     };
   }, [open]);
 
@@ -100,11 +144,16 @@ export function HeaderAuth({ customer }: HeaderAuthProps) {
     open && mounted
       ? createPortal(
           <div
+            ref={menuRef}
             id={menuId}
             role="menu"
             aria-label="Account"
             className="account-menu-panel"
-            style={{ top: menuPos.top, right: menuPos.right }}
+            style={{
+              top: menuPos.top,
+              left: menuPos.left,
+              width: menuPos.width,
+            }}
           >
             <p className="account-menu-email" title={customer.email}>
               {customer.email}

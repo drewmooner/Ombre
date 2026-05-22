@@ -27,7 +27,7 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
 
   return (
     <header className="site-header">
-      <div className="morph-surface site-header-bar mx-auto grid max-w-7xl grid-cols-1 gap-2.5 overflow-visible rounded-2xl px-3 py-3 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-4 sm:px-6 sm:py-3">
+      <div className="morph-surface site-header-bar mx-auto grid max-w-7xl grid-cols-1 gap-3 overflow-visible rounded-2xl px-3.5 py-3.5 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-4 sm:px-6 sm:py-3">
         <Link
           href="/"
           className="site-header-brand flex min-w-0 items-center gap-2 sm:col-start-1 sm:row-start-1"
@@ -39,13 +39,13 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
           </span>
         </Link>
 
-        <div className="site-header-actions flex w-full flex-wrap items-center justify-center gap-1 overflow-visible sm:col-start-3 sm:row-start-1 sm:w-auto sm:flex-nowrap sm:justify-end">
+        <div className="site-header-actions flex w-full flex-wrap items-center justify-center gap-1.5 overflow-visible sm:col-start-3 sm:row-start-1 sm:w-auto sm:flex-nowrap sm:justify-end sm:gap-2">
           <span
-            className="site-header-pill morph-btn hidden items-center justify-center gap-1 rounded-full px-2.5 py-2 text-xs font-medium min-[420px]:inline-flex"
+            className="site-header-pill morph-btn inline-flex shrink-0 items-center justify-center gap-1 rounded-full px-2 py-1.5 text-[0.625rem] font-semibold tracking-wide sm:px-2.5 sm:py-2 sm:text-xs"
             title="Nigeria · NGN only"
           >
             <span aria-hidden>🇳🇬</span>
-            <span className="hidden min-[400px]:inline">NGN</span>
+            <span>NGN</span>
           </span>
 
           <HeaderAuth customer={customer} />
