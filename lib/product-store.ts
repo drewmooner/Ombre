@@ -31,9 +31,46 @@ export async function listProductsByCatalogId(
     .from("products")
     .select("*")
     .eq("catalog_id", catalogId)
+    .order("featured", { ascending: false })
     .order("name");
   if (error) throw new Error(error.message);
   return (data ?? []).map((row) => productFromRow(row));
+}
+
+export async function listProductsByCatalogPage(
+  catalogId: string,
+  offset: number,
+  limit: number,
+): Promise<{ products: Product[]; total: number }> {
+  const safeOffset = Math.max(0, Math.floor(offset));
+  const safeLimit = Math.min(48, Math.max(1, Math.floor(limit)));
+
+  if (!usesSupabase()) {
+    return json.jsonListProductsByCatalogPage(catalogId, safeOffset, safeLimit);
+  }
+
+  await prepareDb();
+  const supabase = getSupabaseAdmin();
+
+  const { count, error: countErr } = await supabase
+    .from("products")
+    .select("id", { count: "exact", head: true })
+    .eq("catalog_id", catalogId);
+  if (countErr) throw new Error(countErr.message);
+
+  const { data, error } = await supabase
+    .from("products")
+    .select("*")
+    .eq("catalog_id", catalogId)
+    .order("featured", { ascending: false })
+    .order("name")
+    .range(safeOffset, safeOffset + safeLimit - 1);
+  if (error) throw new Error(error.message);
+
+  return {
+    products: (data ?? []).map((row) => productFromRow(row)),
+    total: count ?? 0,
+  };
 }
 
 export async function countProductsByCatalogId(catalogId: string): Promise<number> {

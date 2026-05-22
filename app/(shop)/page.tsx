@@ -1,6 +1,9 @@
 import { ShopHome } from "@/components/shop-home";
 import { CustomerGreeting } from "@/components/shop/customer-greeting";
-import { getCatalogsWithProducts } from "@/lib/catalogs.server";
+import {
+  getCatalogProductsPage,
+  getCatalogsWithProductCounts,
+} from "@/lib/catalogs.server";
 import { getShopCustomer } from "@/lib/shop-auth";
 import { isShopOpen } from "@/lib/shop-settings";
 
@@ -8,10 +11,16 @@ export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const [catalogs, customer, shopOpen] = await Promise.all([
-    getCatalogsWithProducts(),
+    getCatalogsWithProductCounts(),
     getShopCustomer(),
     isShopOpen(),
   ]);
+
+  const sorted = [...catalogs].sort((a, b) => a.name.localeCompare(b.name));
+  const firstCatalog = sorted[0];
+  const firstPage = firstCatalog
+    ? await getCatalogProductsPage(firstCatalog.id, 0)
+    : null;
 
   return (
     <main>
@@ -20,7 +29,12 @@ export default async function Home() {
           <CustomerGreeting customer={customer} />
         </section>
       ) : null}
-      <ShopHome catalogs={catalogs} />
+      <ShopHome
+        catalogs={catalogs}
+        initialCatalogId={firstCatalog?.id ?? ""}
+        initialProducts={firstPage?.products ?? []}
+        initialTotal={firstPage?.total ?? 0}
+      />
     </main>
   );
 }

@@ -3,6 +3,9 @@ import { getClientIpFromRequest } from "@/lib/security/client-ip";
 import { checkRateLimit } from "@/lib/security/rate-limit";
 
 function limitForPath(pathname: string): { bucket: string; max: number; windowMs: number } {
+  if (pathname.startsWith("/api/shop/catalog-products")) {
+    return { bucket: "api-shop-catalog-products", max: 120, windowMs: 60_000 };
+  }
   if (pathname.startsWith("/api/download-image")) {
     return { bucket: "api-download-image", max: 30, windowMs: 60_000 };
   }

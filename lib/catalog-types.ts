@@ -11,3 +11,7 @@ export type Catalog = {
 export type CatalogWithProducts = Catalog & {
   products: import("./product-types").Product[];
 };
+
+export type CatalogWithCount = Catalog & {
+  productCount: number;
+};

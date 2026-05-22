@@ -1,23 +1,42 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import type { CatalogWithProducts } from "@/lib/catalog-types";
-import { ProductCard } from "./product-card";
+import { useMemo, useState, useTransition } from "react";
+import type { CatalogWithCount } from "@/lib/catalog-types";
+import type { Product } from "@/lib/product-types";
+import { InfiniteProductGrid } from "./shop/infinite-product-grid";
 
 type ShopHomeProps = {
-  catalogs: CatalogWithProducts[];
+  catalogs: CatalogWithCount[];
+  initialCatalogId: string;
+  initialProducts: Product[];
+  initialTotal: number;
 };
 
-export function ShopHome({ catalogs }: ShopHomeProps) {
+export function ShopHome({
+  catalogs,
+  initialCatalogId,
+  initialProducts,
+  initialTotal,
+}: ShopHomeProps) {
   const sorted = useMemo(
     () => [...catalogs].sort((a, b) => a.name.localeCompare(b.name)),
     [catalogs],
   );
 
-  const [selectedId, setSelectedId] = useState(() => sorted[0]?.id ?? "");
+  const [selectedId, setSelectedId] = useState(
+    () => sorted.find((c) => c.id === initialCatalogId)?.id ?? sorted[0]?.id ?? "",
+  );
+  const [resetKey, setResetKey] = useState(0);
+  const [pendingCatalog, startCatalogTransition] = useTransition();
 
-  const selected = sorted.find((c) => c.id === selectedId) ?? sorted[0];
   const showPicker = sorted.length > 1;
+
+  function handleCatalogChange(catalogId: string) {
+    setSelectedId(catalogId);
+    startCatalogTransition(() => {
+      setResetKey((k) => k + 1);
+    });
+  }
 
   if (sorted.length === 0) {
     return (
@@ -25,10 +44,6 @@ export function ShopHome({ catalogs }: ShopHomeProps) {
         <p className="text-[var(--muted)]">No listings yet.</p>
       </section>
     );
-  }
-
-  if (!selected) {
-    return null;
   }
 
   return (
@@ -41,34 +56,30 @@ export function ShopHome({ catalogs }: ShopHomeProps) {
           <select
             id="shop-catalog"
             value={selectedId}
-            onChange={(e) => setSelectedId(e.target.value)}
+            onChange={(e) => handleCatalogChange(e.target.value)}
+            disabled={pendingCatalog}
             className="shop-catalog-select mt-2"
           >
             {sorted.map((catalog) => (
               <option key={catalog.id} value={catalog.id}>
                 {catalog.name}
-                {catalog.products.length === 0
+                {catalog.productCount === 0
                   ? " (no products yet)"
-                  : ` (${catalog.products.length})`}
+                  : ` (${catalog.productCount})`}
               </option>
             ))}
           </select>
         </div>
       )}
 
-      {selected.products.length === 0 ? (
-        <p className="py-12 text-center text-sm text-[var(--muted)]">
-          No products in {selected.name} yet.
-        </p>
-      ) : (
-        <ul className="grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-6 sm:gap-y-10 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-8">
-          {selected.products.map((product) => (
-            <li key={product.id}>
-              <ProductCard product={product} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <InfiniteProductGrid
+        catalogOrder={sorted}
+        anchorCatalogId={selectedId}
+        initialProducts={initialProducts}
+        initialTotal={initialTotal}
+        resetKey={resetKey}
+        onActiveCatalogChange={setSelectedId}
+      />
     </section>
   );
 }

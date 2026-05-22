@@ -126,11 +126,25 @@ export async function jsonListProducts(): Promise<Product[]> {
   });
 }
 
+function sortCatalogProducts(a: Product, b: Product): number {
+  if (a.featured !== b.featured) return a.featured ? -1 : 1;
+  return a.name.localeCompare(b.name);
+}
+
 export async function jsonListProductsByCatalogId(catalogId: string): Promise<Product[]> {
   const products = await readProducts();
-  return products
-    .filter((p) => p.catalogId === catalogId)
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return products.filter((p) => p.catalogId === catalogId).sort(sortCatalogProducts);
+}
+
+export async function jsonListProductsByCatalogPage(
+  catalogId: string,
+  offset: number,
+  limit: number,
+): Promise<{ products: Product[]; total: number }> {
+  const all = await jsonListProductsByCatalogId(catalogId);
+  const total = all.length;
+  const products = all.slice(offset, offset + limit);
+  return { products, total };
 }
 
 export async function jsonCountProductsByCatalogId(catalogId: string): Promise<number> {

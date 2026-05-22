@@ -1301,6 +1301,35 @@ body {
   cursor: pointer;
 }
 
+.shop-catalog-divider {
+  grid-column: 1 / -1;
+  padding-top: 0.5rem;
+}
+
+.shop-catalog-divider:not(:first-child) {
+  margin-top: 0.75rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(var(--accent-rgb), 0.12);
+}
+
+.shop-catalog-divider__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.shop-infinite-sentinel {
+  min-height: 3rem;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.shop-infinite-grid {
+  min-height: 12rem;
+}
+
 .shop-catalog-select:focus {
   outline: none;
   border-color: rgba(var(--accent-rgb), 0.32);
