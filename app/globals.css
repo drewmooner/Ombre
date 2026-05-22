@@ -445,48 +445,99 @@ body {
   cursor: wait;
 }
 
-.site-customer-greeting-band {
-  padding: 0 1rem;
+/* Shop home — one column aligned with header (max-w-7xl) */
+.shop-page-shell {
+  width: 100%;
+  max-width: 80rem;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 @media (min-width: 640px) {
-  .site-customer-greeting-band {
+  .shop-page-shell {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
 }
 
 @media (min-width: 1024px) {
-  .site-customer-greeting-band {
+  .shop-page-shell {
     padding-left: 2.5rem;
     padding-right: 2.5rem;
   }
 }
 
-.site-customer-greeting {
+.shop-home-section {
+  width: 100%;
+}
+
+.shop-home-section--compact-top {
   padding-top: 0.75rem;
-  padding-bottom: 0.625rem;
+}
+
+@media (min-width: 640px) {
+  .shop-home-section--compact-top {
+    padding-top: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shop-home-section--compact-top {
+    padding-top: 1.25rem;
+  }
+}
+
+/* Welcome — same left edge as catalog + product grid */
+.site-customer-greeting-band {
+  width: 100%;
+}
+
+.site-customer-greeting {
+  padding: 0.5rem 0 0.35rem;
+  text-align: left;
+  font-family: var(--font-cormorant), Georgia, "Times New Roman", serif;
+}
+
+@media (min-width: 640px) {
+  .site-customer-greeting {
+    padding: 0.875rem 0 0.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .shop-page-shell--greeted .site-customer-greeting {
+    padding: 1.25rem 0 0.875rem;
+    max-width: 36rem;
+  }
 }
 
 .site-customer-greeting-text {
   margin: 0;
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-family: inherit;
+  font-size: clamp(1.25rem, 4.8vw, 1.625rem);
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: 0.01em;
+  line-height: 1.15;
+  letter-spacing: 0.018em;
   color: var(--foreground);
 }
 
 .site-customer-greeting-hi {
+  margin-right: 0.22em;
+  font-family: inherit;
   font-weight: 400;
   font-style: italic;
+  font-size: 0.88em;
   color: var(--accent-soft);
 }
 
 .site-customer-greeting-name {
-  font-weight: 700;
+  font-family: inherit;
+  font-weight: 600;
+  font-style: normal;
   color: var(--accent);
-  letter-spacing: 0.015em;
+  letter-spacing: 0.04em;
 }
 
 .store-header {
@@ -1859,8 +1910,8 @@ video {
     font-size: 0.625rem !important;
   }
 
-  .site-customer-greeting-text {
-    font-size: clamp(1.75rem, 8vw, 2.5rem);
+  .site-customer-greeting {
+    padding: 0.375rem 0 0.25rem;
   }
 
   .shop-catalog-select {

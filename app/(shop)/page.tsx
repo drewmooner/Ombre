@@ -22,19 +22,31 @@ export default async function Home() {
     ? await getCatalogProductsPage(firstCatalog.id, 0)
     : null;
 
+  const showGreeting = shopOpen && Boolean(customer);
+
   return (
     <main>
-      {shopOpen && customer ? (
-        <section className="site-customer-greeting-band" aria-label="Welcome">
-          <CustomerGreeting customer={customer} />
-        </section>
-      ) : null}
-      <ShopHome
-        catalogs={catalogs}
-        initialCatalogId={firstCatalog?.id ?? ""}
-        initialProducts={firstPage?.products ?? []}
-        initialTotal={firstPage?.total ?? 0}
-      />
+      <div
+        className={
+          showGreeting ? "shop-page-shell shop-page-shell--greeted" : "shop-page-shell"
+        }
+      >
+        {showGreeting && customer ? (
+          <section
+            className="site-customer-greeting-band"
+            aria-label="Welcome"
+          >
+            <CustomerGreeting customer={customer} />
+          </section>
+        ) : null}
+        <ShopHome
+          catalogs={catalogs}
+          initialCatalogId={firstCatalog?.id ?? ""}
+          initialProducts={firstPage?.products ?? []}
+          initialTotal={firstPage?.total ?? 0}
+          compactTop={showGreeting}
+        />
+      </div>
     </main>
   );
 }

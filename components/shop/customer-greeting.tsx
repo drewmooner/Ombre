@@ -10,11 +10,11 @@ export function CustomerGreeting({ customer }: CustomerGreetingProps) {
 
   return (
     <div
-      className="site-customer-greeting mx-auto w-full max-w-7xl px-4 sm:px-6"
+      className="site-customer-greeting font-display"
       aria-label={`Signed in as ${customer.email}`}
     >
-      <h1 className="site-customer-greeting-text font-display">
-        <span className="site-customer-greeting-hi">Hi,</span>{" "}
+      <h1 className="site-customer-greeting-text">
+        <span className="site-customer-greeting-hi">Hi,</span>
         <span className="site-customer-greeting-name">{firstName}</span>
       </h1>
     </div>
