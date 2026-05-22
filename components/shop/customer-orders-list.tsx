@@ -123,9 +123,9 @@ export function CustomerOrdersList({
     <div className="shop-orders-sections">
       {activeOrders.length > 0 ? (
         <section className="shop-orders-section">
-          <h2 className="shop-orders-section__title">In progress</h2>
+          <h2 className="shop-orders-section__title">Processing</h2>
           <p className="shop-orders-section__lead">
-            Orders awaiting payment or being prepared for delivery.
+            Paid orders being prepared for delivery.
           </p>
           <ul className="shop-orders-list">
             {activeOrders.map((order) => (

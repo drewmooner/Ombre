@@ -48,13 +48,10 @@ export function isOrderVisibleInCustomerHistory(order: Order): boolean {
   return order.status === "delivered" && Boolean(order.paidAt) && Boolean(order.deliveredAt);
 }
 
-/** Shown on the shop Orders page (pending, paid, delivered). */
+/** Shown on the shop Orders page only after payment has completed. */
 export function isCustomerOrdersPageOrder(order: Order): boolean {
-  return (
-    order.status === "pending" ||
-    order.status === "paid" ||
-    order.status === "delivered"
-  );
+  if (!order.paidAt) return false;
+  return order.status === "paid" || order.status === "delivered";
 }
 
 export function customerOrderStatusLabel(status: OrderStatus): string {

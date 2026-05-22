@@ -8,3 +8,8 @@ export function isActiveOrder(order: Order): boolean {
 export function countActiveOrders(orders: Order[]): number {
   return orders.filter(isActiveOrder).length;
 }
+
+/** Paid, not yet delivered — for customer header badge only. */
+export function countCustomerProcessingOrders(orders: Order[]): number {
+  return orders.filter((o) => o.status === "paid" && Boolean(o.paidAt)).length;
+}

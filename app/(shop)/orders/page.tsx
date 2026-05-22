@@ -14,9 +14,7 @@ export default async function OrdersPage() {
   }
 
   const orders = await listCustomerOrders(customer.id);
-  const activeOrders = orders.filter(
-    (o) => o.status === "pending" || o.status === "paid",
-  );
+  const activeOrders = orders.filter((o) => o.status === "paid");
   const deliveredOrders = orders.filter((o) => o.status === "delivered");
 
   return (
@@ -37,8 +35,8 @@ export default async function OrdersPage() {
           <section className="shop-orders-empty morph-surface">
             <p className="shop-orders-empty__title">No orders yet</p>
             <p className="shop-orders-empty__text">
-              When you place an order, it will show up here with its status —
-              from payment through to delivery.
+              After you complete checkout and payment, your order will show up
+              here with processing and delivery updates.
             </p>
             <MorphButton href="/" variant="primary" className="mt-8">
               Browse the shop
