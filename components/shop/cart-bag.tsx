@@ -155,8 +155,8 @@ export function CartBag({
           <span>Subtotal</span>
           <span>{formatNaira(subtotal)}</span>
         </div>
-        <p className="mt-2 text-xs text-[var(--muted)]">
-          Delivery details at checkout · Nigeria only
+        <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
+          Delivery fee added at checkout (door step or park) · Nigeria only
         </p>
 
         {!signedIn ? (

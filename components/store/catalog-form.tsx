@@ -2,8 +2,10 @@
 
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useToast } from "@/components/ui/toast";
 import { ActionAlerts } from "./action-alerts";
 import { useActionRedirect } from "./use-action-redirect";
+import { useActionSuccess } from "./use-action-success";
 import type { Catalog } from "@/lib/catalog-types";
 import type { ActionState } from "@/lib/store/actions";
 import {
@@ -21,6 +23,7 @@ type CatalogFormProps = {
 const initial: ActionState = {};
 
 export function CatalogForm({ catalog }: CatalogFormProps) {
+  const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const [uploading, startUpload] = useTransition();
   const [name, setName] = useState(catalog?.name ?? "");
@@ -41,7 +44,13 @@ export function CatalogForm({ catalog }: CatalogFormProps) {
     }
   }, [name, slugTouched]);
 
-  useActionRedirect(state, pending);
+  useActionRedirect(state, pending, () => {
+    if (state.success) toast.success(state.success);
+  });
+
+  useActionSuccess(state.error, pending, () => {
+    if (state.error) toast.error(state.error);
+  });
 
   async function handleUpload(file: File) {
     setUploadError(null);

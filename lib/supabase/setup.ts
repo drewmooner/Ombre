@@ -14,7 +14,7 @@ import {
   type ProductRow,
 } from "./mappers";
 import { isSupabaseConfigured } from "./config";
-import { isSchemaApplied, runSchemaMigration } from "./migrate";
+import { isSchemaApplied, runRlsMigration, runSchemaMigration } from "./migrate";
 import { ensureProductImagesBucket } from "./storage";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -214,6 +214,8 @@ async function setupDatabase(): Promise<void> {
   if (!(await tableExists())) {
     await runSchemaMigration();
   }
+
+  await runRlsMigration();
 
   try {
     await ensureProductImagesBucket();

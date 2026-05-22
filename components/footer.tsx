@@ -41,7 +41,16 @@ export function Footer() {
           <div>
             <p className="mb-3 font-medium text-[var(--foreground)]">Help</p>
             <ul className="space-y-2 text-[var(--muted)]">
-              <li>Delivery: 3–7 days nationwide</li>
+              <li>
+                <Link href="/terms" className="link-accent transition-colors">
+                  Terms of Service
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="link-accent transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
               <li>
                 <a
                   href={buildWhatsAppUrl(WHATSAPP_DEFAULT_MESSAGE)}
@@ -52,7 +61,7 @@ export function Footer() {
                   WhatsApp support
                 </a>
               </li>
-              <li>NGN payments only</li>
+              <li>NGN · Paystack payments</li>
             </ul>
           </div>
         </div>

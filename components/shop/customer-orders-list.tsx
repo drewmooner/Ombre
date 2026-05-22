@@ -37,6 +37,11 @@ function OrderCard({ order }: { order: Order }) {
         <div className="shop-order-card__head-end">
           <OrderStatusBadge status={order.status} />
           <p className="shop-order-card__total">{formatNaira(order.total)}</p>
+          {order.shippingFee > 0 ? (
+            <p className="text-xs text-[var(--muted)] tabular-nums">
+              incl. {formatNaira(order.shippingFee)} delivery
+            </p>
+          ) : null}
         </div>
       </header>
 

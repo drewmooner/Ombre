@@ -1,15 +1,19 @@
 "use client";
 
-import { useActionState, useMemo } from "react";
-import Image from "next/image";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
-import { DELIVERY_METHOD_OPTIONS } from "@/lib/delivery-methods";
+import {
+  DELIVERY_METHOD_OPTIONS,
+  type DeliveryMethod,
+} from "@/lib/delivery-methods";
 import { startCheckout, type CheckoutState } from "@/lib/shop/checkout-actions";
 import { NIGERIA_STATES } from "@/lib/nigeria-states";
 import { formatNaira } from "@/lib/format-price";
+import { formatShippingFee } from "@/lib/shipping-fees";
 import { MorphButton } from "@/components/morph-button";
 import { useActionRedirect } from "@/components/use-action-redirect";
+import { CheckoutOrderSummary } from "@/components/shop/checkout-order-summary";
 
 type CheckoutFormProps = {
   accountEmail: string;
@@ -31,18 +35,18 @@ export function CheckoutForm({
 }: CheckoutFormProps) {
   const { items, subtotal, itemCount, clearCart } = useCart();
   const [state, formAction, pending] = useActionState(startCheckout, initial);
-  const total = subtotal;
+  const [deliveryMethod, setDeliveryMethod] =
+    useState<DeliveryMethod>("doorstep");
+  const shippingFee =
+    DELIVERY_METHOD_OPTIONS.find((o) => o.value === deliveryMethod)?.feeNgn ?? 0;
+  const total = subtotal + shippingFee;
 
   const cartJson = useMemo(
     () =>
       JSON.stringify(
         items.map((i) => ({
           productId: i.productId,
-          slug: i.slug,
-          name: i.name,
-          price: i.price,
           quantity: i.quantity,
-          image: i.image,
         })),
       ),
     [items],
@@ -110,11 +114,18 @@ export function CheckoutForm({
                     name="deliveryMethod"
                     value={option.value}
                     required
+                    checked={deliveryMethod === option.value}
+                    onChange={() => setDeliveryMethod(option.value)}
                     className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
                   />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-semibold text-[var(--foreground)]">
-                      {option.title}
+                  <span className="min-w-0 flex-1">
+                    <span className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+                      <span className="text-sm font-semibold text-[var(--foreground)]">
+                        {option.title}
+                      </span>
+                      <span className="text-sm font-semibold tabular-nums text-[var(--accent)]">
+                        {formatShippingFee(option.value)}
+                      </span>
                     </span>
                     <span className="mt-1 block text-xs leading-relaxed text-[var(--muted)]">
                       {option.description}
@@ -219,44 +230,17 @@ export function CheckoutForm({
           </p>
         </header>
 
-        <ul className="mt-6 divide-y divide-[rgba(var(--accent-rgb),0.08)]">
-          {items.map((item) => (
-            <li
-              key={item.productId}
-              className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:gap-4"
-            >
-              <div className="relative h-[4.5rem] w-16 shrink-0 overflow-hidden rounded-xl border border-[rgba(var(--accent-rgb),0.1)]">
-                <Image
-                  src={item.image}
-                  alt=""
-                  fill
-                  sizes="64px"
-                  className="object-cover"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-medium leading-snug">{item.name}</p>
-                <p className="mt-1 text-sm text-[var(--muted)]">
-                  Quantity {item.quantity} · {formatNaira(item.price)} each
-                </p>
-              </div>
-              <p className="text-sm font-semibold tabular-nums sm:ml-auto sm:shrink-0 sm:text-right">
-                {formatNaira(item.price * item.quantity)}
-              </p>
-            </li>
-          ))}
-        </ul>
-
-        <div className="mt-6 flex items-center justify-between border-t border-[rgba(var(--accent-rgb),0.12)] pt-5">
-          <span className="text-base font-semibold">Total</span>
-          <span className="font-display text-2xl font-medium text-[var(--accent)] tabular-nums">
-            {formatNaira(total)}
-          </span>
-        </div>
+        <CheckoutOrderSummary
+          items={items}
+          itemCount={itemCount}
+          subtotal={subtotal}
+          deliveryMethod={deliveryMethod}
+        />
 
         <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
           Items stay reserved for {paymentTimeoutMinutes} minutes while you pay.
-          If payment is not completed in time, stock returns to the shop.
+          Delivery fee is based on your selected method above. If payment is not
+          completed in time, stock returns to the shop.
         </p>
       </section>
 
@@ -282,6 +266,18 @@ export function CheckoutForm({
         <MorphButton href="/cart" fullWidth className="py-3">
           Back to bag
         </MorphButton>
+
+        <p className="text-center text-xs leading-relaxed text-[var(--muted)]">
+          By placing your order you agree to our{" "}
+          <Link href="/terms" className="link-accent font-medium">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/privacy" className="link-accent font-medium">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
     </form>
   );

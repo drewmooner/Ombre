@@ -129,17 +129,19 @@ export async function verifyPaystackPayment(
   };
 }
 
+/** HMAC-SHA512 of raw body with PAYSTACK_SECRET_KEY — required for every webhook. */
 export function verifyPaystackWebhookSignature(
   rawBody: string,
   signatureHeader: string | null,
 ): boolean {
   const key = secretKey();
-  if (!key || !signatureHeader) return false;
+  if (!key || !signatureHeader?.trim()) return false;
 
   const expected = createHmac("sha512", key).update(rawBody).digest("hex");
+  const received = signatureHeader.trim();
   try {
     const a = Buffer.from(expected);
-    const b = Buffer.from(signatureHeader);
+    const b = Buffer.from(received);
     return a.length === b.length && timingSafeEqual(a, b);
   } catch {
     return false;

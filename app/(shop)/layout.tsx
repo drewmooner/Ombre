@@ -27,11 +27,7 @@ export default async function ShopLayout({
 
   return (
     <ShopCartProvider>
-      <SiteShell
-        customer={customer}
-        shopOpen={shopOpen}
-        activeOrderCount={activeOrderCount}
-      >
+      <SiteShell customer={customer} activeOrderCount={activeOrderCount}>
         {shopOpen ? children : <ShopClosed />}
       </SiteShell>
     </ShopCartProvider>

@@ -7,18 +7,18 @@ import {
   isAkwaIbomState,
   parseDeliveryMethod,
 } from "@/lib/delivery-methods";
+import {
+  buildOrderLineItemsFromCart,
+  parseCartLinesForCheckout,
+} from "@/lib/checkout/cart-lines";
+import { shippingFeeForMethod } from "@/lib/shipping-fees";
 import { runOrderMaintenance } from "@/lib/order-maintenance";
 import {
   createPendingOrder,
   expirePendingOrder,
 } from "@/lib/order-store";
 import type { OrderDelivery, OrderLineItem } from "@/lib/order-types";
-import {
-  deductProductPieces,
-  findProductById,
-  restoreProductPieces,
-} from "@/lib/product-store";
-import { getProductDisplayName } from "@/lib/product-display-name";
+import { deductProductPieces, restoreProductPieces } from "@/lib/product-store";
 import { getShopSettings } from "@/lib/shop-settings";
 import { getShopCustomer } from "@/lib/shop-auth";
 import { sendOrderAwaitingPaymentEmail } from "@/lib/email/order-emails";
@@ -134,45 +134,22 @@ export async function startCheckout(
     const delivery = parseDelivery(formData, customer.email);
     if ("error" in delivery) return { error: delivery.error };
 
-    const cartLines = parseCartLines(String(formData.get("cart") ?? ""));
+    const cartLines = parseCartLinesForCheckout(
+      String(formData.get("cart") ?? ""),
+    );
     if (!cartLines) return { error: "Your bag is empty or invalid" };
 
-    const settings = await getShopSettings();
-    const orderItems: OrderLineItem[] = [];
+    const built = await buildOrderLineItemsFromCart(cartLines);
+    if ("error" in built) return { error: built.error };
 
-    for (const line of cartLines) {
-      const product = await findProductById(line.productId);
-      if (!product) {
-        return { error: `${line.name} is no longer available` };
-      }
-      if (!product.inStock || product.pieces < line.quantity) {
-        return {
-          error:
-            product.pieces === 0
-              ? `${product.name} is out of stock`
-              : `Only ${product.pieces} left for ${product.name}`,
-        };
-      }
-      if (product.price !== line.price) {
-        return {
-          error: `Price changed for ${product.name}. Refresh your bag and try again.`,
-        };
-      }
-      orderItems.push({
-        productId: product.id,
-        slug: product.slug,
-        name: getProductDisplayName(product),
-        price: product.price,
-        quantity: line.quantity,
-        image: product.images[0] ?? line.image,
-        size: product.sizes?.join(", "),
-      });
-    }
+    const orderItems = built.items;
+    const settings = await getShopSettings();
 
     const subtotal = orderItems.reduce(
       (sum, i) => sum + i.price * i.quantity,
       0,
     );
+    const shippingFee = shippingFeeForMethod(delivery.method);
 
     const reserved: OrderLineItem[] = [];
 
@@ -202,7 +179,7 @@ export async function startCheckout(
         customerEmail: delivery.email,
         items: orderItems,
         subtotal,
-        shippingFee: 0,
+        shippingFee,
         delivery,
         paymentTimeoutMinutes: settings.paymentTimeoutMinutes,
         paystackReference,

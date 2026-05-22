@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getClientIpFromRequest } from "@/lib/security/client-ip";
+import { rateLimitResponse } from "@/lib/security/rate-limit-response";
+import {
+  isHttpUrl,
+  parseDownloadImageQuery,
+} from "@/lib/security/validators";
 
 const ALLOWED_HOSTS = new Set(["images.unsplash.com"]);
 
@@ -18,12 +24,23 @@ function isAllowedUrl(target: URL, requestOrigin: string): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  const urlParam = request.nextUrl.searchParams.get("url");
-  if (!urlParam) {
-    return NextResponse.json({ error: "Missing url" }, { status: 400 });
+  const limited = rateLimitResponse(
+    "api-download-image",
+    getClientIpFromRequest(request),
+    { max: 30, windowMs: 60_000 },
+  );
+  if (limited) return limited;
+
+  const parsed = parseDownloadImageQuery(request.nextUrl.searchParams);
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
 
-  const target = resolveTarget(urlParam, request.nextUrl.origin);
+  if (!isHttpUrl(parsed.url) && !parsed.url.startsWith("/")) {
+    return NextResponse.json({ error: "Invalid url" }, { status: 400 });
+  }
+
+  const target = resolveTarget(parsed.url, request.nextUrl.origin);
   if (!target || !isAllowedUrl(target, request.nextUrl.origin)) {
     return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
@@ -33,16 +50,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Could not fetch image" }, { status: 502 });
   }
 
-  const filename =
-    request.nextUrl.searchParams.get("filename")?.replace(/[^\w.\-]/g, "_") ??
-    "product-image.jpg";
-
   const contentType = upstream.headers.get("content-type") ?? "image/jpeg";
 
   return new NextResponse(upstream.body, {
     headers: {
       "Content-Type": contentType,
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="${parsed.filename}"`,
       "Cache-Control": "private, no-store",
     },
   });

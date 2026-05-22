@@ -51,7 +51,15 @@ export async function requireStore(): Promise<void> {
 }
 
 export function verifyStorePassword(password: string): boolean {
-  const expected = process.env.ADMIN_PASSWORD;
-  if (!expected) return false;
-  return password === expected;
+  const expected = process.env.ADMIN_PASSWORD?.trim();
+  if (!expected || !password) return false;
+
+  const a = Buffer.from(password);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  try {
+    return timingSafeEqual(a, b);
+  } catch {
+    return false;
+  }
 }

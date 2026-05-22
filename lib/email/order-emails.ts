@@ -30,8 +30,21 @@ function orderItemsHtml(order: Order): string {
 }
 
 function orderTotalsHtml(order: Order): string {
-  return `
-    <tr><td style="padding:8px 0 0;font-weight:600;color:#2a2224;font-size:14px;">Total</td><td align="right" style="padding:8px 0 0;font-weight:600;color:#722f37;font-size:15px;">${formatNaira(order.total)}</td></tr>`;
+  const method = deliveryMethodLabel(order.delivery.method);
+  const rows: string[] = [];
+
+  if (order.shippingFee > 0) {
+    rows.push(
+      `<tr><td style="padding:6px 0;font-size:13px;color:#73666a;">Subtotal</td><td align="right" style="padding:6px 0;font-size:13px;color:#2a2224;">${formatNaira(order.subtotal)}</td></tr>`,
+      `<tr><td style="padding:6px 0;font-size:13px;color:#73666a;">Delivery (${method})</td><td align="right" style="padding:6px 0;font-size:13px;color:#2a2224;">${formatNaira(order.shippingFee)}</td></tr>`,
+    );
+  }
+
+  rows.push(
+    `<tr><td style="padding:10px 0 0;font-weight:600;color:#2a2224;font-size:14px;border-top:1px solid rgba(114,47,55,0.1);">Total</td><td align="right" style="padding:10px 0 0;font-weight:600;color:#722f37;font-size:15px;border-top:1px solid rgba(114,47,55,0.1);">${formatNaira(order.total)}</td></tr>`,
+  );
+
+  return rows.join("");
 }
 
 function deliveryHtml(order: Order): string {

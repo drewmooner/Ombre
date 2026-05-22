@@ -153,44 +153,48 @@ export async function deductProductPieces(
   productId: string,
   quantity: number,
 ): Promise<Product> {
+  if (usesSupabase()) {
+    await prepareDb();
+    const { atomicDeductProductPieces } = await import(
+      "@/lib/supabase/atomic-stock"
+    );
+    return atomicDeductProductPieces(productId, quantity);
+  }
+
   const product = await findProductById(productId);
   if (!product) throw new Error("Product not found");
 
   const qty = Math.max(0, Math.round(quantity));
   if (qty > product.pieces) {
-    throw new Error(`Only ${product.pieces} left for ${product.name}`);
+    throw new Error(
+      product.pieces === 0
+        ? `${product.name} is out of stock`
+        : `Only ${product.pieces} left for ${product.name}`,
+    );
   }
 
   product.pieces -= qty;
   product.inStock = product.pieces > 0;
-
-  if (!usesSupabase()) return json.jsonUpdateProductStock(product);
-  await prepareDb();
-  const { error } = await getSupabaseAdmin()
-    .from("products")
-    .update({ pieces: product.pieces, in_stock: product.inStock })
-    .eq("id", productId);
-  if (error) throw new Error(error.message);
-  return product;
+  return json.jsonUpdateProductStock(product);
 }
 
 export async function restoreProductPieces(
   productId: string,
   quantity: number,
 ): Promise<Product> {
+  if (usesSupabase()) {
+    await prepareDb();
+    const { atomicRestoreProductPieces } = await import(
+      "@/lib/supabase/atomic-stock"
+    );
+    return atomicRestoreProductPieces(productId, quantity);
+  }
+
   const product = await findProductById(productId);
   if (!product) throw new Error("Product not found");
 
   const qty = Math.max(0, Math.round(quantity));
   product.pieces += qty;
   product.inStock = product.pieces > 0;
-
-  if (!usesSupabase()) return json.jsonUpdateProductStock(product);
-  await prepareDb();
-  const { error } = await getSupabaseAdmin()
-    .from("products")
-    .update({ pieces: product.pieces, in_stock: product.inStock })
-    .eq("id", productId);
-  if (error) throw new Error(error.message);
-  return product;
+  return json.jsonUpdateProductStock(product);
 }

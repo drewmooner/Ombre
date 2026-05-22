@@ -46,11 +46,16 @@ function sortCustomerOrdersNewestFirst(orders: Order[]): Order[] {
 
 export async function listCustomerOrders(customerId: string): Promise<Order[]> {
   if (!usesSupabase()) return json.jsonListCustomerOrders(customerId);
-  const orders = await listOrders();
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("orders")
+    .select("*")
+    .eq("customer_id", customerId)
+    .in("status", ["paid", "delivered"])
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
   return sortCustomerOrdersNewestFirst(
-    orders.filter(
-      (o) => o.customerId === customerId && isCustomerOrdersPageOrder(o),
-    ),
+    (data ?? []).map((row) => orderFromRow(row)).filter(isCustomerOrdersPageOrder),
   );
 }
 
@@ -73,6 +78,26 @@ export async function findOrderById(id: string): Promise<Order | null> {
     .from("orders")
     .select("*")
     .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data ? orderFromRow(data) : null;
+}
+
+/** Customer-facing lookups — never return another shopper's order. */
+export async function findOrderByIdForCustomer(
+  orderId: string,
+  customerId: string,
+): Promise<Order | null> {
+  if (!usesSupabase()) {
+    const order = await json.jsonFindOrderById(orderId);
+    return order?.customerId === customerId ? order : null;
+  }
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .eq("customer_id", customerId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? orderFromRow(data) : null;
@@ -112,14 +137,20 @@ export async function createPendingOrder(
     now + input.paymentTimeoutMinutes * 60_000,
   ).toISOString();
 
+  const subtotal = input.items.reduce(
+    (sum, i) => sum + Math.round(i.price) * i.quantity,
+    0,
+  );
+  const shippingFee = Math.round(input.shippingFee);
+
   const order: Order = {
     id: randomUUID(),
     customerId: input.customerId,
     customerEmail: input.customerEmail.trim().toLowerCase(),
     items: input.items.map((i) => ({ ...i })),
-    subtotal: Math.round(input.subtotal),
-    shippingFee: 0,
-    total: Math.round(input.subtotal),
+    subtotal,
+    shippingFee,
+    total: subtotal + shippingFee,
     delivery: input.delivery,
     status: "pending",
     createdAt,

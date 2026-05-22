@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { StoreProviders } from "@/components/store/store-providers";
 import { StoreNav } from "@/components/store/store-nav";
 import { countActiveOrders } from "@/lib/order-active";
 import { listOrders } from "@/lib/order-store";
@@ -22,11 +23,15 @@ export default async function StoreLayout({
     : [true, 0];
 
   return (
-    <div className="page-ambient store-shell min-h-full">
-      {authed && (
-        <StoreNav shopOpen={shopOpen} activeOrderCount={activeOrderCount} />
-      )}
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">{children}</main>
-    </div>
+    <StoreProviders>
+      <div className="page-ambient store-shell min-h-full">
+        {authed && (
+          <StoreNav shopOpen={shopOpen} activeOrderCount={activeOrderCount} />
+        )}
+        <main className="store-main mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+          {children}
+        </main>
+      </div>
+    </StoreProviders>
   );
 }

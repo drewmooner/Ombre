@@ -74,3 +74,12 @@ create table if not exists public.otp_challenges (
   last_sent_at timestamptz not null,
   attempts integer not null default 0
 );
+
+-- Row Level Security: block direct PostgREST access with the anon key.
+-- The Next.js app uses the service role on the server and scopes orders by customer id.
+alter table public.orders enable row level security;
+alter table public.shop_customers enable row level security;
+alter table public.otp_challenges enable row level security;
+alter table public.products enable row level security;
+alter table public.catalogs enable row level security;
+alter table public.shop_settings enable row level security;

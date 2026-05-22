@@ -23,6 +23,11 @@ export type FulfillPaymentOptions = {
   metadataOrderId?: string;
   /** Skip Resend receipt on this request (e.g. complete page — webhook sends it). */
   skipReceiptEmail?: boolean;
+  /**
+   * Paystack webhooks must set this so a fake POST cannot mark orders paid when
+   * CHECKOUT_SIMULATE_PAYMENT is enabled on the server.
+   */
+  forcePaystackVerify?: boolean;
 };
 
 export function revalidateAfterPayment() {
@@ -108,7 +113,7 @@ export async function fulfillOrderPayment(
   options?: FulfillPaymentOptions,
 ): Promise<FulfillPaymentResult> {
   try {
-    if (isCheckoutSimulateEnabled()) {
+    if (!options?.forcePaystackVerify && isCheckoutSimulateEnabled()) {
       return await fulfillOrderPaymentSimulated(reference, options);
     }
 

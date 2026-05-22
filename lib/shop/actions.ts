@@ -3,6 +3,12 @@
 import { sendOtpEmail } from "@/lib/email/send-email";
 import { createOtpChallenge, verifyOtpChallenge } from "@/lib/otp-store";
 import { OTP_MIN_RESEND_SECONDS } from "@/lib/otp-constants";
+import { assertRateLimit } from "@/lib/security/assert-rate-limit";
+import {
+  normalizeOtpCode,
+  normalizeRedirectPath,
+  normalizeShopEmail,
+} from "@/lib/security/validators";
 import { createShopSession, destroyShopSession } from "@/lib/shop-auth";
 import { findOrCreateShopUser } from "@/lib/shop-user-store";
 import type { FormActionState } from "@/lib/form-action-state";
@@ -13,11 +19,20 @@ export async function requestShopOtp(
   _prev: ShopAuthState,
   formData: FormData,
 ): Promise<ShopAuthState> {
-  const email = String(formData.get("email") ?? "");
+  const limited = await assertRateLimit("shop-otp-request", {
+    max: 8,
+    windowMs: 15 * 60_000,
+  });
+  if (!limited.ok) return { error: limited.error };
+
+  const emailNorm = normalizeShopEmail(String(formData.get("email") ?? ""));
+  if (!emailNorm) {
+    return { error: "Enter a valid email address" };
+  }
+
   const isResend = String(formData.get("intent") ?? "") === "resend";
 
-  const created = await createOtpChallenge(email);
-  const emailNorm = email.trim().toLowerCase();
+  const created = await createOtpChallenge(emailNorm);
   if (!created.ok) {
     if (created.retryAfterSeconds != null) {
       return {
@@ -67,24 +82,41 @@ export async function verifyShopOtp(
   _prev: ShopAuthState,
   formData: FormData,
 ): Promise<ShopAuthState> {
-  const email = String(formData.get("email") ?? "");
-  const code = String(formData.get("code") ?? "");
+  const limited = await assertRateLimit("shop-otp-verify", {
+    max: 30,
+    windowMs: 15 * 60_000,
+  });
+  if (!limited.ok) return { error: limited.error };
 
-  const verified = await verifyOtpChallenge(email, code);
+  const emailNorm = normalizeShopEmail(String(formData.get("email") ?? ""));
+  const code = normalizeOtpCode(String(formData.get("code") ?? ""));
+
+  if (!emailNorm) {
+    return { error: "Enter a valid email address" };
+  }
+  if (!code) {
+    return {
+      error: "Enter the 6-digit code from your email",
+      otpSent: true,
+      email: emailNorm,
+    };
+  }
+
+  const verified = await verifyOtpChallenge(emailNorm, code);
   if (!verified.ok) {
     return {
       error: verified.error,
       otpSent: true,
-      email: email.trim().toLowerCase(),
+      email: emailNorm,
     };
   }
 
   const user = await findOrCreateShopUser(verified.email);
   await createShopSession(user.id);
 
-  const next = String(formData.get("redirectTo") ?? "").trim();
-  const redirectTo =
-    next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const redirectTo = normalizeRedirectPath(
+    String(formData.get("redirectTo") ?? ""),
+  );
 
   return { redirectTo };
 }

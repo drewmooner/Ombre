@@ -1,5 +1,6 @@
 import pg from "pg";
 import { getDatabaseUrl } from "./config";
+import { RLS_SQL } from "./rls.sql";
 import { SCHEMA_SQL } from "./schema.sql";
 
 const { Client } = pg;
@@ -26,10 +27,19 @@ function isBenignSchemaRace(err: unknown): boolean {
   );
 }
 
-function schemaStatements(): string[] {
-  return SCHEMA_SQL.split(";")
+function sqlStatements(sql: string): string[] {
+  return sql
+    .split(";")
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+}
+
+function schemaStatements(): string[] {
+  return sqlStatements(SCHEMA_SQL);
+}
+
+function rlsStatements(): string[] {
+  return sqlStatements(RLS_SQL);
 }
 
 async function withClient<T>(
@@ -92,4 +102,15 @@ export async function runSchemaMigration(): Promise<void> {
     }
     throw err;
   }
+}
+
+/** Idempotent — enables RLS with no anon/authenticated policies (server uses service role). */
+export async function runRlsMigration(): Promise<void> {
+  if (!(await isSchemaApplied())) return;
+
+  await withClient(async (client) => {
+    for (const statement of rlsStatements()) {
+      await client.query(statement);
+    }
+  });
 }

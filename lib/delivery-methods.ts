@@ -1,19 +1,24 @@
+import { SHIPPING_FEE_NGN } from "@/lib/shipping-fees";
+
 export type DeliveryMethod = "doorstep" | "park";
 
 export const DELIVERY_METHOD_OPTIONS: {
   value: DeliveryMethod;
   title: string;
   description: string;
+  feeNgn: number;
 }[] = [
   {
     value: "doorstep",
     title: "Door step",
     description: "Delivery within Akwa Ibom — to your address.",
+    feeNgn: SHIPPING_FEE_NGN.doorstep,
   },
   {
     value: "park",
     title: "Park",
     description: "Outside Akwa Ibom — pick-up at a motor park or agreed hub.",
+    feeNgn: SHIPPING_FEE_NGN.park,
   },
 ];
 

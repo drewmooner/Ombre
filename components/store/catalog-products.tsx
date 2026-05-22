@@ -14,6 +14,7 @@ import { formatNaira } from "@/lib/format-price";
 import { MorphButton } from "@/components/morph-button";
 import { ProductForm } from "./product-form";
 import { ProductPreviewModal } from "./product-preview-modal";
+import { useToast } from "@/components/ui/toast";
 import { useActionSuccess } from "./use-action-success";
 
 type CatalogProductsProps = {
@@ -35,6 +36,7 @@ function ProductRow({
   onStatus: (state: ActionState) => void;
 }) {
   const router = useRouter();
+  const toast = useToast();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteState, deleteAction, deletePending] = useActionState(
     deleteProductAction.bind(null, catalog.id, product.id),
@@ -51,6 +53,8 @@ function ProductRow({
 
   useActionSuccess(successMsg, pending, () => {
     setConfirmDelete(false);
+    const message = deleteState.success ?? stockState.success;
+    if (message) toast.success(message);
     if (deleteState.success || stockState.success) {
       onStatus({
         success: deleteState.success ?? stockState.success,
@@ -58,6 +62,10 @@ function ProductRow({
       });
     }
     router.refresh();
+  });
+
+  useActionSuccess(err, pending, () => {
+    if (err) toast.error(err);
   });
 
   return (

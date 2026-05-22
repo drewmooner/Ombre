@@ -19,6 +19,7 @@ import {
 } from "@/lib/store/actions";
 import { getDefaultProductFields } from "@/lib/catalog-product-defaults";
 import { MorphButton } from "@/components/morph-button";
+import { useToast } from "@/components/ui/toast";
 import { ActionAlerts } from "./action-alerts";
 import { useActionRedirect } from "./use-action-redirect";
 import { useActionSuccess } from "./use-action-success";
@@ -38,6 +39,7 @@ export function ProductForm({
   existingSlugs = [],
 }: ProductFormProps) {
   const router = useRouter();
+  const toast = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
   const slugAtSubmitRef = useRef("");
   const catalogDefaults = useMemo(
@@ -60,6 +62,8 @@ export function ProductForm({
   const [state, formAction, pending] = useActionState(action, initial);
 
   useActionSuccess(state.success, pending, () => {
+    if (state.redirectTo) return;
+    if (state.success) toast.success(state.success);
     router.refresh();
     if (!product) {
       const defaults = getDefaultProductFields(catalog, [
@@ -73,7 +77,13 @@ export function ProductForm({
     }
   });
 
-  useActionRedirect(state, pending);
+  useActionSuccess(state.error, pending, () => {
+    if (state.error) toast.error(state.error);
+  });
+
+  useActionRedirect(state, pending, () => {
+    if (state.success) toast.success(state.success);
+  });
 
   async function uploadFile(file: File) {
     setUploadError(null);
