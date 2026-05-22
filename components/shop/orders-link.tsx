@@ -1,21 +1,36 @@
 import Link from "next/link";
 import { OrdersIcon } from "@/components/icons";
+import { HeaderIconLabel } from "./header-icon-label";
 
 type OrdersLinkProps = {
-  className: string;
+  className?: string;
   badgeClassName?: string;
   activeOrderCount?: number;
   signedIn: boolean;
+  label?: string;
 };
 
 export function OrdersLink({
-  className,
+  className = "morph-btn site-header-action site-header-action--orders",
   badgeClassName,
   activeOrderCount = 0,
   signedIn,
+  label = "Orders",
 }: OrdersLinkProps) {
   const href = signedIn ? "/orders" : "/login?next=/orders";
   const badge = activeOrderCount > 0 ? activeOrderCount : 0;
+
+  const badgeEl =
+    badge > 0 ? (
+      <span
+        className={
+          badgeClassName ??
+          "site-header-action__badge"
+        }
+      >
+        {badge > 9 ? "9+" : badge}
+      </span>
+    ) : null;
 
   return (
     <Link
@@ -24,21 +39,13 @@ export function OrdersLink({
       className={className}
       aria-label={
         signedIn
-          ? `Your orders${badge > 0 ? `, ${badge} in progress` : ""}`
-          : "Sign in to view orders"
+          ? `${label}${badge > 0 ? `, ${badge} in progress` : ""}`
+          : `Sign in to view ${label.toLowerCase()}`
       }
     >
-      <OrdersIcon className="h-5 w-5" />
-      {badge > 0 ? (
-        <span
-          className={
-            badgeClassName ??
-            "absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--accent)] px-1 text-[10px] font-semibold text-[var(--on-accent)]"
-          }
-        >
-          {badge > 9 ? "9+" : badge}
-        </span>
-      ) : null}
+      <HeaderIconLabel label={label} badge={badgeEl}>
+        <OrdersIcon className="h-5 w-5" />
+      </HeaderIconLabel>
     </Link>
   );
 }

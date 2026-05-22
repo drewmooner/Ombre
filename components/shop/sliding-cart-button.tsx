@@ -9,10 +9,11 @@ export function SlidingCartButton() {
 
   return (
     <CartLink
-      className={`sliding-cart-btn ${visible ? "sliding-cart-btn--visible" : ""}`}
+      className={`sliding-cart-btn site-header-action site-header-action--cart ${visible ? "sliding-cart-btn--visible" : ""}`}
       badgeClassName="sliding-cart-badge"
       inactive={!visible}
       instantNavigate
+      compactLabel
     />
   );
 }

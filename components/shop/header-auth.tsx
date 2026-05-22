@@ -11,6 +11,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { UserIcon } from "@/components/icons";
+import { HeaderIconLabel } from "@/components/shop/header-icon-label";
 import { firstNameFromEmail } from "@/lib/shop/display-name";
 import type { ShopCustomer } from "@/lib/shop-types";
 import { logoutShopCustomer } from "@/lib/shop/actions";
@@ -130,13 +131,15 @@ export function HeaderAuth({ customer }: HeaderAuthProps) {
           ref={triggerRef}
           type="button"
           onClick={() => setOpen((v) => !v)}
-          className="morph-btn site-header-account flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+          className="morph-btn site-header-action site-header-action--account"
           aria-expanded={open}
           aria-haspopup="menu"
           aria-controls={menuId}
           aria-label={`Account menu for ${firstName}`}
         >
-          <UserIcon className="h-5 w-5" />
+          <HeaderIconLabel label="Account">
+            <UserIcon className="h-5 w-5" />
+          </HeaderIconLabel>
         </button>
       </div>
       {menu}

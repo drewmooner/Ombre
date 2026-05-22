@@ -60,7 +60,7 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
           </button>
         </form>
 
-        <div className="col-start-2 row-start-1 flex items-center justify-end gap-2 overflow-visible sm:col-start-3 sm:gap-3">
+        <div className="site-header-actions col-start-2 row-start-1 flex items-center justify-end overflow-visible sm:col-start-3">
           <span
             className="morph-btn site-header-pill flex h-10 min-w-10 items-center justify-center gap-1 rounded-full px-2.5 text-xs font-medium sm:min-w-0 sm:px-3 sm:py-2"
             title="Nigeria · NGN only"
@@ -74,10 +74,9 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
           <OrdersLink
             signedIn={Boolean(customer)}
             activeOrderCount={activeOrderCount}
-            className="morph-btn site-header-orders relative flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
           />
 
-          <CartLink className="morph-btn site-header-cart relative flex h-11 w-11 items-center justify-center rounded-full" />
+          <CartLink />
         </div>
       </div>
     </header>
