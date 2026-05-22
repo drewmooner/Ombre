@@ -8,7 +8,10 @@ import { randomUUID } from "crypto";
 import type { Catalog } from "./catalog-types";
 import type { Order, OrderDelivery, OrderLineItem, OrderStatus } from "./order-types";
 import { parseDeliveryMethod } from "./delivery-methods";
-import { isOrderVisibleInCustomerHistory } from "./order-types";
+import {
+  isCustomerOrdersPageOrder,
+  isOrderVisibleInCustomerHistory,
+} from "./order-types";
 import type { Product } from "./product-types";
 import type { ShopSettings } from "./shop-settings";
 import type { ShopCustomer } from "./shop-types";
@@ -391,6 +394,19 @@ export async function jsonUpdateOrder(order: Order): Promise<Order> {
   orders[index] = order;
   await writeOrders(orders);
   return order;
+}
+
+export async function jsonListCustomerOrders(customerId: string): Promise<Order[]> {
+  const orders = await readOrders();
+  return orders
+    .filter(
+      (o) => o.customerId === customerId && isCustomerOrdersPageOrder(o),
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.deliveredAt ?? b.paidAt ?? b.createdAt).getTime() -
+        new Date(a.deliveredAt ?? a.paidAt ?? a.createdAt).getTime(),
+    );
 }
 
 export async function jsonListCustomerOrderHistory(customerId: string): Promise<Order[]> {

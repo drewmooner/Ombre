@@ -7,13 +7,15 @@ import { BrandLogo } from "./brand-logo";
 import { SearchIcon } from "./icons";
 import { CartLink } from "./shop/cart-link";
 import { HeaderAuth } from "./shop/header-auth";
+import { OrdersLink } from "./shop/orders-link";
 import type { ShopCustomer } from "@/lib/shop-types";
 
 type HeaderProps = {
   customer?: ShopCustomer | null;
+  activeOrderCount?: number;
 };
 
-export function Header({ customer = null }: HeaderProps) {
+export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -68,6 +70,12 @@ export function Header({ customer = null }: HeaderProps) {
           </span>
 
           <HeaderAuth customer={customer} />
+
+          <OrdersLink
+            signedIn={Boolean(customer)}
+            activeOrderCount={activeOrderCount}
+            className="morph-btn site-header-orders relative flex h-11 w-11 items-center justify-center rounded-full text-[var(--muted)] transition-colors hover:text-[var(--accent)]"
+          />
 
           <CartLink className="morph-btn site-header-cart relative flex h-11 w-11 items-center justify-center rounded-full" />
         </div>

@@ -48,6 +48,43 @@ export function isOrderVisibleInCustomerHistory(order: Order): boolean {
   return order.status === "delivered" && Boolean(order.paidAt) && Boolean(order.deliveredAt);
 }
 
+/** Shown on the shop Orders page (pending, paid, delivered). */
+export function isCustomerOrdersPageOrder(order: Order): boolean {
+  return (
+    order.status === "pending" ||
+    order.status === "paid" ||
+    order.status === "delivered"
+  );
+}
+
+export function customerOrderStatusLabel(status: OrderStatus): string {
+  switch (status) {
+    case "pending":
+      return "Awaiting payment";
+    case "paid":
+      return "Processing";
+    case "delivered":
+      return "Delivered";
+    case "expired":
+      return "Payment expired";
+  }
+}
+
+export function customerOrderStatusHint(order: Order): string {
+  switch (order.status) {
+    case "pending":
+      return `Complete payment before ${new Date(order.expiresAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })} or stock is released.`;
+    case "paid":
+      return "Payment received — we're preparing your order for delivery.";
+    case "delivered":
+      return order.deliveredAt
+        ? `Delivered ${new Date(order.deliveredAt).toLocaleString("en-NG", { dateStyle: "medium" })}.`
+        : "Your order has been delivered.";
+    case "expired":
+      return "This order expired before payment was completed.";
+  }
+}
+
 export function orderStatusLabel(status: OrderStatus): string {
   switch (status) {
     case "pending":

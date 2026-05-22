@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import {
+  isCustomerOrdersPageOrder,
   isOrderVisibleInCustomerHistory,
   type Order,
   type OrderDelivery,
@@ -35,20 +36,34 @@ export async function listOrders(): Promise<Order[]> {
   return (data ?? []).map((row) => orderFromRow(row));
 }
 
+function sortCustomerOrdersNewestFirst(orders: Order[]): Order[] {
+  return [...orders].sort(
+    (a, b) =>
+      new Date(b.deliveredAt ?? b.paidAt ?? b.createdAt).getTime() -
+      new Date(a.deliveredAt ?? a.paidAt ?? a.createdAt).getTime(),
+  );
+}
+
+export async function listCustomerOrders(customerId: string): Promise<Order[]> {
+  if (!usesSupabase()) return json.jsonListCustomerOrders(customerId);
+  const orders = await listOrders();
+  return sortCustomerOrdersNewestFirst(
+    orders.filter(
+      (o) => o.customerId === customerId && isCustomerOrdersPageOrder(o),
+    ),
+  );
+}
+
 export async function listCustomerOrderHistory(
   customerId: string,
 ): Promise<Order[]> {
   if (!usesSupabase()) return json.jsonListCustomerOrderHistory(customerId);
   const orders = await listOrders();
-  return orders
-    .filter(
+  return sortCustomerOrdersNewestFirst(
+    orders.filter(
       (o) => o.customerId === customerId && isOrderVisibleInCustomerHistory(o),
-    )
-    .sort(
-      (a, b) =>
-        new Date(b.deliveredAt ?? b.paidAt ?? b.createdAt).getTime() -
-        new Date(a.deliveredAt ?? a.paidAt ?? a.createdAt).getTime(),
-    );
+    ),
+  );
 }
 
 export async function findOrderById(id: string): Promise<Order | null> {

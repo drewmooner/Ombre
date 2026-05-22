@@ -22,6 +22,7 @@ function revalidateOrderPaths() {
   revalidatePath("/", "layout");
   revalidatePath("/");
   revalidatePath("/store/orders");
+  revalidatePath("/orders");
   revalidatePath("/account/orders");
 }
 

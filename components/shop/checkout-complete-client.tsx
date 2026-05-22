@@ -32,8 +32,8 @@ export function CheckoutCompleteClient({
       <p className="mt-3 text-sm leading-relaxed text-[var(--muted)]">{message}</p>
       <div className="mt-8 flex flex-col gap-3">
         {success ? (
-          <MorphButton href="/account/orders" variant="primary">
-            Order history
+          <MorphButton href="/orders" variant="primary">
+            View orders
           </MorphButton>
         ) : null}
         <MorphButton href="/cart">{success ? "Continue shopping" : "Back to bag"}</MorphButton>

@@ -108,14 +108,6 @@ export function HeaderAuth({ customer }: HeaderAuthProps) {
             <p className="account-menu-email" title={customer.email}>
               {customer.email}
             </p>
-            <Link
-              href="/account/orders"
-              role="menuitem"
-              className="account-menu-link"
-              onClick={() => setOpen(false)}
-            >
-              Order history
-            </Link>
             <form action={action} className="account-menu-footer">
               <button
                 type="submit"

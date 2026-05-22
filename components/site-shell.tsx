@@ -8,16 +8,18 @@ type SiteShellProps = {
   children: React.ReactNode;
   customer?: ShopCustomer | null;
   shopOpen?: boolean;
+  activeOrderCount?: number;
 };
 
 export function SiteShell({
   children,
   customer = null,
   shopOpen = true,
+  activeOrderCount = 0,
 }: SiteShellProps) {
   return (
     <div className="page-ambient flex min-h-full flex-col">
-      <Header customer={customer} />
+      <Header customer={customer} activeOrderCount={activeOrderCount} />
       {shopOpen && customer ? (
         <section className="site-customer-greeting-band" aria-label="Welcome">
           <CustomerGreeting customer={customer} />

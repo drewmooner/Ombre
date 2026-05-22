@@ -31,6 +31,11 @@ export function Footer() {
                   Cart
                 </Link>
               </li>
+              <li>
+                <Link href="/orders" className="link-accent transition-colors">
+                  Orders
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

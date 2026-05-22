@@ -30,6 +30,7 @@ export function revalidateAfterPayment() {
   revalidatePath("/");
   revalidatePath("/cart");
   revalidatePath("/store/orders");
+  revalidatePath("/orders");
   revalidatePath("/account/orders");
 }
 
