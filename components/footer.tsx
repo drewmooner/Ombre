@@ -66,6 +66,12 @@ export function Footer() {
           </div>
         </div>
       </div>
+
+      <div className="mx-auto mt-8 max-w-7xl border-t border-[rgba(var(--accent-rgb),0.08)] pt-6 sm:mt-10">
+        <p className="text-center text-xs tracking-wide text-[var(--muted)] sm:text-left">
+          © 2026 Ombré. All rights reserved.
+        </p>
+      </div>
     </footer>
   );
 }
