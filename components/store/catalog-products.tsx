@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/shop/product-image";
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
 import type { Catalog } from "@/lib/catalog-types";
@@ -78,7 +78,7 @@ function ProductRow({
             className="relative block h-14 w-11 shrink-0 overflow-hidden rounded-lg ring-offset-2 transition hover:ring-2 hover:ring-[var(--accent)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
             aria-label={`Preview ${product.name}`}
           >
-            <Image
+            <ProductImage
               src={product.images[0]}
               alt=""
               fill

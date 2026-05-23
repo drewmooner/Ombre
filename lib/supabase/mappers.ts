@@ -11,6 +11,7 @@ export type CatalogRow = {
   image: string;
   default_price: number;
   default_product_name: string;
+  sort_order: number;
 };
 
 export type ProductRow = {
@@ -78,6 +79,7 @@ export function catalogFromRow(row: CatalogRow): Catalog {
     image: row.image,
     defaultPrice: row.default_price,
     defaultProductName: row.default_product_name,
+    sortOrder: row.sort_order ?? 0,
   };
 }
 
@@ -89,6 +91,7 @@ export function catalogToRow(catalog: Catalog): CatalogRow {
     image: catalog.image,
     default_price: catalog.defaultPrice,
     default_product_name: catalog.defaultProductName,
+    sort_order: catalog.sortOrder,
   };
 }
 

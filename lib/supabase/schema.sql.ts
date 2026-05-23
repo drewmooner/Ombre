@@ -6,7 +6,8 @@ create table if not exists public.catalogs (
   name text not null,
   image text not null default '',
   default_price integer not null default 0,
-  default_product_name text not null default ''
+  default_product_name text not null default '',
+  sort_order integer not null default 0
 );
 
 create table if not exists public.products (
@@ -70,4 +71,20 @@ create table if not exists public.otp_challenges (
   last_sent_at timestamptz not null,
   attempts integer not null default 0
 );
+`;
+
+/** Idempotent — adds sort_order and backfills rows that still share 0. */
+export const CATALOG_SORT_ORDER_SQL = `
+alter table public.catalogs add column if not exists sort_order integer not null default 0;
+
+with ordered as (
+  select id, row_number() over (order by name asc) - 1 as rn
+  from public.catalogs
+  where sort_order = 0
+)
+update public.catalogs as c
+set sort_order = ordered.rn
+from ordered
+where c.id = ordered.id
+  and (select count(*)::int from public.catalogs where sort_order = 0) > 1;
 `;

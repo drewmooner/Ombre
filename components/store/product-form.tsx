@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/shop/product-image";
 import { useRouter } from "next/navigation";
 import {
   useActionState,
@@ -140,7 +140,7 @@ export function ProductForm({
           <ul className="grid grid-cols-4 gap-2">
             {imageUrls.map((url, i) => (
               <li key={url} className="relative aspect-[3/4] overflow-hidden rounded-lg">
-                <Image src={url} alt="" fill className="object-cover" sizes="72px" />
+                <ProductImage src={url} alt="" fill className="object-cover" sizes="72px" />
                 {i === 0 && (
                   <span className="absolute left-1 top-1 rounded bg-[var(--accent)] px-1.5 py-0.5 text-[9px] text-[var(--on-accent)]">
                     Cover

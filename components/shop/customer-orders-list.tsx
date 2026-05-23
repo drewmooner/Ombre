@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/shop/product-image";
 import { deliveryMethodLabel } from "@/lib/delivery-methods";
 import { formatNaira } from "@/lib/format-price";
 import { formatOrderDate } from "@/lib/format-date";
@@ -54,7 +54,7 @@ function OrderCard({ order }: { order: Order }) {
               href={`/product/${item.slug}`}
               className="shop-order-item__thumb"
             >
-              <Image
+              <ProductImage
                 src={item.image}
                 alt=""
                 fill

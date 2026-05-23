@@ -1,4 +1,5 @@
 import { ShopCartProvider } from "@/components/shop/cart-provider";
+import { ShopCatalogNavProvider } from "@/components/shop/shop-catalog-nav-context";
 import { SiteShell } from "@/components/site-shell";
 import { ShopClosed } from "@/components/shop/shop-closed";
 import { countCustomerProcessingOrders } from "@/lib/order-active";
@@ -27,9 +28,11 @@ export default async function ShopLayout({
 
   return (
     <ShopCartProvider>
-      <SiteShell customer={customer} activeOrderCount={activeOrderCount}>
-        {shopOpen ? children : <ShopClosed />}
-      </SiteShell>
+      <ShopCatalogNavProvider>
+        <SiteShell customer={customer} activeOrderCount={activeOrderCount}>
+          {shopOpen ? children : <ShopClosed />}
+        </SiteShell>
+      </ShopCatalogNavProvider>
     </ShopCartProvider>
   );
 }

@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/shop/product-image";
 import { notFound } from "next/navigation";
 import { CatalogProducts } from "@/components/store/catalog-products";
 import { requireStore } from "@/lib/store-auth";
@@ -37,7 +37,7 @@ export default async function CatalogDetailPage({
 
       <header className="store-catalog-hero">
         <div className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl sm:aspect-[3/1]">
-          <Image
+          <ProductImage
             src={catalog.image}
             alt={catalog.name}
             fill

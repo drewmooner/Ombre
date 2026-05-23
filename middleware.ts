@@ -9,6 +9,9 @@ function limitForPath(pathname: string): { bucket: string; max: number; windowMs
   if (pathname.startsWith("/api/download-image")) {
     return { bucket: "api-download-image", max: 30, windowMs: 60_000 };
   }
+  if (pathname.startsWith("/api/shop/image")) {
+    return { bucket: "api-shop-image", max: 120, windowMs: 60_000 };
+  }
   if (pathname.startsWith("/api/paystack/webhook")) {
     return { bucket: "api-paystack-webhook", max: 120, windowMs: 60_000 };
   }

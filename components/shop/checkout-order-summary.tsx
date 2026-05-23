@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/shop/product-image";
 import type { CartItem } from "@/lib/cart-context";
 import { deliveryMethodLabel, type DeliveryMethod } from "@/lib/delivery-methods";
 import { formatNaira } from "@/lib/format-price";
@@ -31,7 +31,7 @@ export function CheckoutOrderSummary({
             className="flex flex-col gap-3 py-4 first:pt-0 last:pb-0 sm:flex-row sm:items-start sm:gap-4"
           >
             <div className="relative h-[4.5rem] w-16 shrink-0 overflow-hidden rounded-xl border border-[rgba(var(--accent-rgb),0.1)]">
-              <Image
+              <ProductImage
                 src={item.image}
                 alt=""
                 fill

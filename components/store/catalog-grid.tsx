@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/shop/product-image";
 import { useRouter } from "next/navigation";
 import { useActionState, useState } from "react";
 import type { Catalog } from "@/lib/catalog-types";
@@ -38,7 +38,7 @@ function CatalogCard({
     <article className="store-catalog-card group relative">
       <Link href={`/store/catalogs/${catalog.id}`} className="block">
         <span className="relative block aspect-[4/3] overflow-hidden rounded-t-2xl bg-[var(--background-deep)]">
-          <Image
+          <ProductImage
             src={catalog.image}
             alt={catalog.name}
             fill

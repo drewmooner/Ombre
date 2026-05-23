@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Footer } from "./footer";
 import { Header } from "./header";
 import { WhatsAppButton } from "./whatsapp-button";
@@ -16,7 +17,9 @@ export function SiteShell({
 }: SiteShellProps) {
   return (
     <div className="page-ambient flex min-h-full flex-col">
-      <Header customer={customer} activeOrderCount={activeOrderCount} />
+      <Suspense fallback={null}>
+        <Header customer={customer} activeOrderCount={activeOrderCount} />
+      </Suspense>
       <main className="flex-1">{children}</main>
       <Footer />
       <WhatsAppButton />

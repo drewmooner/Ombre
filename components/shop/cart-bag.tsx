@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/shop/product-image";
 import { MorphButton } from "@/components/morph-button";
 import { useCart } from "@/lib/cart-context";
 import { formatNaira } from "@/lib/format-price";
@@ -76,7 +76,7 @@ export function CartBag({
               className={thumbClass}
               onClick={onContinueShopping}
             >
-              <Image
+              <ProductImage
                 src={item.image}
                 alt={item.name}
                 fill

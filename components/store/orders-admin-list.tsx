@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useState } from "react";
-import Image from "next/image";
+import { ProductImage } from "@/components/shop/product-image";
 import { useActionState } from "react";
 import {
   confirmOrderPaymentAction,
@@ -93,7 +93,7 @@ function OrderDetailPanel({ order }: { order: Order }) {
               className="flex gap-3 rounded-lg bg-[rgba(var(--accent-rgb),0.04)] p-2.5"
             >
               <div className="relative h-14 w-12 shrink-0 overflow-hidden rounded-md">
-                <Image
+                <ProductImage
                   src={item.image}
                   alt=""
                   fill

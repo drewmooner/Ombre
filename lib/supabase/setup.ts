@@ -14,7 +14,12 @@ import {
   type ProductRow,
 } from "./mappers";
 import { isSupabaseConfigured } from "./config";
-import { isSchemaApplied, runRlsMigration, runSchemaMigration } from "./migrate";
+import {
+  isSchemaApplied,
+  runCatalogSortOrderMigration,
+  runRlsMigration,
+  runSchemaMigration,
+} from "./migrate";
 import { ensureProductImagesBucket } from "./storage";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -28,6 +33,7 @@ const SEED_CATALOGS: Catalog[] = [
       "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&q=80",
     defaultPrice: 12000,
     defaultProductName: "Handkerchief 2pcs",
+    sortOrder: 0,
   },
 ];
 
@@ -216,6 +222,7 @@ async function setupDatabase(): Promise<void> {
   }
 
   await runRlsMigration();
+  await runCatalogSortOrderMigration();
 
   try {
     await ensureProductImagesBucket();

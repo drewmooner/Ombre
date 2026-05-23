@@ -6,6 +6,8 @@ export type Catalog = {
   defaultPrice: number;
   /** Default listing name when adding a product in this catalog */
   defaultProductName: string;
+  /** Display order on admin catalogs page and shop home (lower = earlier). */
+  sortOrder: number;
 };
 
 export type CatalogWithProducts = Catalog & {

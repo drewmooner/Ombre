@@ -6,6 +6,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { randomUUID } from "crypto";
 import type { Catalog } from "./catalog-types";
+import { compareCatalogs } from "./catalog-order";
 import type { Order, OrderDelivery, OrderLineItem, OrderStatus } from "./order-types";
 import { parseDeliveryMethod } from "./delivery-methods";
 import {
@@ -30,14 +31,27 @@ const SEED_CATALOGS: Catalog[] = [
       "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&h=600&fit=crop&q=80",
     defaultPrice: 12000,
     defaultProductName: "Handkerchief 2pcs",
+    sortOrder: 0,
   },
 ];
+
+async function normalizeCatalogSortOrders(catalogs: Catalog[]): Promise<Catalog[]> {
+  let changed = false;
+  const normalized = catalogs.map((catalog, index) => {
+    if (typeof catalog.sortOrder === "number") return catalog;
+    changed = true;
+    return { ...catalog, sortOrder: index };
+  });
+  if (changed) await writeCatalogs(normalized);
+  return normalized;
+}
 
 async function readCatalogs(): Promise<Catalog[]> {
   try {
     const raw = await readFile(path.join(DATA_DIR, "catalogs.json"), "utf-8");
     const parsed = JSON.parse(raw) as Catalog[];
-    return parsed.length ? parsed : SEED_CATALOGS;
+    const base = parsed.length ? parsed : SEED_CATALOGS;
+    return normalizeCatalogSortOrders(base);
   } catch {
     await mkdir(DATA_DIR, { recursive: true });
     await writeFile(
@@ -60,7 +74,12 @@ async function writeCatalogs(catalogs: Catalog[]): Promise<void> {
 
 export async function jsonListCatalogs(): Promise<Catalog[]> {
   const catalogs = await readCatalogs();
-  return [...catalogs].sort((a, b) => a.name.localeCompare(b.name));
+  return [...catalogs].sort(compareCatalogs);
+}
+
+export async function jsonNextCatalogSortOrder(): Promise<number> {
+  const catalogs = await readCatalogs();
+  return catalogs.reduce((max, c) => Math.max(max, c.sortOrder), -1) + 1;
 }
 
 export async function jsonFindCatalogById(id: string): Promise<Catalog | null> {
@@ -75,9 +94,16 @@ export async function jsonFindCatalogBySlug(slug: string): Promise<Catalog | nul
 
 export async function jsonCreateCatalog(catalog: Catalog): Promise<Catalog> {
   const catalogs = await readCatalogs();
-  catalogs.push(catalog);
+  const withOrder: Catalog = {
+    ...catalog,
+    sortOrder:
+      typeof catalog.sortOrder === "number"
+        ? catalog.sortOrder
+        : catalogs.reduce((max, c) => Math.max(max, c.sortOrder), -1) + 1,
+  };
+  catalogs.push(withOrder);
   await writeCatalogs(catalogs);
-  return catalog;
+  return withOrder;
 }
 
 export async function jsonUpdateCatalog(catalog: Catalog): Promise<Catalog> {

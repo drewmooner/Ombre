@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { DownloadIcon } from "@/components/icons";
+import { resolveShopImageSrc } from "@/lib/shop/image-url";
 
 type SaveProductImageButtonProps = {
   imageUrl: string;
@@ -21,10 +22,12 @@ function downloadFilename(filename: string, imageUrl: string): string {
 
 async function saveImage(imageUrl: string, filename: string) {
   const name = downloadFilename(filename, imageUrl);
+  const resolved = resolveShopImageSrc(imageUrl);
   const href =
-    imageUrl.startsWith("/") ||
-    imageUrl.startsWith(window.location.origin)
-      ? imageUrl
+    resolved.startsWith("/api/shop/image") ||
+    resolved.startsWith("/") ||
+    resolved.startsWith(window.location.origin)
+      ? resolved
       : `/api/download-image?url=${encodeURIComponent(imageUrl)}&filename=${encodeURIComponent(name)}`;
 
   const res = await fetch(href);

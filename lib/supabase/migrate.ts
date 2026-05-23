@@ -1,7 +1,7 @@
 import pg from "pg";
 import { getDatabaseUrl } from "./config";
 import { RLS_SQL } from "./rls.sql";
-import { SCHEMA_SQL } from "./schema.sql";
+import { CATALOG_SORT_ORDER_SQL, SCHEMA_SQL } from "./schema.sql";
 
 const { Client } = pg;
 
@@ -102,6 +102,17 @@ export async function runSchemaMigration(): Promise<void> {
     }
     throw err;
   }
+}
+
+/** Idempotent — catalog display order for admin + shop home. */
+export async function runCatalogSortOrderMigration(): Promise<void> {
+  if (!(await isSchemaApplied())) return;
+
+  await withClient(async (client) => {
+    for (const statement of sqlStatements(CATALOG_SORT_ORDER_SQL)) {
+      await client.query(statement);
+    }
+  });
 }
 
 /** Idempotent — enables RLS with no anon/authenticated policies (server uses service role). */

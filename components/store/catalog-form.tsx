@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/shop/product-image";
 import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { useToast } from "@/components/ui/toast";
 import { ActionAlerts } from "./action-alerts";
@@ -79,7 +79,7 @@ export function CatalogForm({ catalog }: CatalogFormProps) {
           >
             {imageUrl ? (
               <span className="relative block aspect-[4/3] w-full overflow-hidden rounded-xl">
-                <Image src={imageUrl} alt="" fill className="object-cover" sizes="400px" />
+                <ProductImage src={imageUrl} alt="" fill className="object-cover" sizes="400px" />
               </span>
             ) : (
               <>

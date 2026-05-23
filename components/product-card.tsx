@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/shop/product-image";
 import { useState } from "react";
 import { formatNaira } from "@/lib/format-price";
 import { getProductDisplayName } from "@/lib/product-display-name";
@@ -33,7 +33,7 @@ export function ProductCard({ product }: ProductCardProps) {
         className="morph-surface relative mb-4 block overflow-hidden rounded-2xl"
       >
         <div className="relative aspect-[3/4] w-full bg-[var(--background-deep)]">
-          <Image
+          <ProductImage
             src={product.images[0]}
             alt={displayName}
             fill

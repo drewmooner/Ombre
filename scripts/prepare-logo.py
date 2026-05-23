@@ -4,7 +4,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -61,6 +61,17 @@ def trim_transparent(img: Image.Image, padding: int = 8) -> Image.Image:
 FAVICON_BG = (243, 238, 236, 255)
 
 
+def embolden_mark(mark: Image.Image) -> Image.Image:
+    """Darken strokes slightly so the mark reads at 16–32px tab sizes."""
+    rgba = mark.convert("RGBA")
+    r, g, b, a = rgba.split()
+    rgb = Image.merge("RGB", (r, g, b))
+    rgb = ImageEnhance.Contrast(rgb).enhance(1.2)
+    rgb = ImageEnhance.Brightness(rgb).enhance(0.82)
+    r, g, b = rgb.split()
+    return Image.merge("RGBA", (r, g, b, a))
+
+
 def build_square_icon(
     mark: Image.Image,
     size: int,
@@ -68,7 +79,7 @@ def build_square_icon(
     padding_ratio: float = 0.1,
 ) -> Image.Image:
     """Center the mark on a square canvas sized for favicons."""
-    mark = mark.convert("RGBA")
+    mark = embolden_mark(mark.convert("RGBA"))
     cropped = trim_transparent(mark, padding=0)
     bbox = cropped.getbbox()
     if not bbox:
@@ -93,17 +104,17 @@ def write_favicon_assets(mark: Image.Image, root: Path) -> None:
     app = root / "app"
     app.mkdir(parents=True, exist_ok=True)
 
-    icon_512 = build_square_icon(mark, 512, padding_ratio=0.08)
+    icon_512 = build_square_icon(mark, 512, padding_ratio=0.05)
     icon_512.save(app / "icon.png", "PNG", optimize=True)
     print(f"Wrote {app / 'icon.png'} (512x512)")
 
-    apple = build_square_icon(mark, 180, padding_ratio=0.1)
+    apple = build_square_icon(mark, 180, padding_ratio=0.06)
     apple.save(app / "apple-icon.png", "PNG", optimize=True)
     print(f"Wrote {app / 'apple-icon.png'} (180x180)")
 
-    favicon_32 = build_square_icon(mark, 32, padding_ratio=0.06)
-    favicon_48 = build_square_icon(mark, 48, padding_ratio=0.06)
-    favicon_16 = build_square_icon(mark, 16, padding_ratio=0.05)
+    favicon_32 = build_square_icon(mark, 32, padding_ratio=0.04)
+    favicon_48 = build_square_icon(mark, 48, padding_ratio=0.04)
+    favicon_16 = build_square_icon(mark, 16, padding_ratio=0.03)
     favicon_32.save(
         app / "favicon.ico",
         format="ICO",

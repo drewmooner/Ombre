@@ -10,7 +10,8 @@ create table if not exists public.catalogs (
   name text not null,
   image text not null default '',
   default_price integer not null default 0,
-  default_product_name text not null default ''
+  default_product_name text not null default '',
+  sort_order integer not null default 0
 );
 
 create table if not exists public.products (

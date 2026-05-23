@@ -7,6 +7,7 @@ import {
   deleteShopImageUrls,
 } from "./supabase/storage";
 import * as json from "./json-data";
+import { compareCatalogs } from "./catalog-order";
 import { slugify } from "./slug";
 import { deleteProductsByCatalogId } from "./product-store";
 import { getSupabaseAdmin } from "./supabase/admin";
@@ -23,9 +24,23 @@ export async function listCatalogs(): Promise<Catalog[]> {
   const { data, error } = await getSupabaseAdmin()
     .from("catalogs")
     .select("*")
-    .order("name");
+    .order("sort_order", { ascending: true })
+    .order("name", { ascending: true });
   if (error) throw new Error(error.message);
-  return (data ?? []).map((row) => catalogFromRow(row));
+  return (data ?? []).map((row) => catalogFromRow(row)).sort(compareCatalogs);
+}
+
+async function nextCatalogSortOrder(): Promise<number> {
+  if (!usesSupabase()) return json.jsonNextCatalogSortOrder();
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("catalogs")
+    .select("sort_order")
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return (data?.sort_order ?? -1) + 1;
 }
 
 export async function findCatalogById(id: string): Promise<Catalog | null> {
@@ -52,9 +67,13 @@ export async function findCatalogBySlug(slug: string): Promise<Catalog | null> {
   return data ? catalogFromRow(data) : null;
 }
 
-export type CatalogInput = Omit<Catalog, "id" | "defaultProductName"> & {
+export type CatalogInput = Omit<
+  Catalog,
+  "id" | "defaultProductName" | "sortOrder"
+> & {
   id?: string;
   defaultProductName?: string;
+  sortOrder?: number;
 };
 
 export async function createCatalogRecord(input: CatalogInput): Promise<Catalog> {
@@ -71,6 +90,7 @@ export async function createCatalogRecord(input: CatalogInput): Promise<Catalog>
     defaultProductName:
       input.defaultProductName?.trim() ||
       inferDefaultProductName(input.name, slug),
+    sortOrder: input.sortOrder ?? (await nextCatalogSortOrder()),
   };
 
   if (!usesSupabase()) return json.jsonCreateCatalog(catalog);
@@ -103,6 +123,7 @@ export async function updateCatalogRecord(
       input.defaultProductName?.trim() ||
       current.defaultProductName ||
       inferDefaultProductName(input.name, slug),
+    sortOrder: current.sortOrder,
   };
 
   await deleteRemovedImageUrls(

@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { ProductImage } from "@/components/shop/product-image";
 import { useRouter } from "next/navigation";
 import { useActionState, useCallback, useEffect, useState } from "react";
 import { useActionSuccess } from "./use-action-success";
@@ -75,7 +75,7 @@ export function ProductPreviewModal({
         aria-label={product.name}
       >
         <div className="product-lightbox-frame">
-          <Image
+          <ProductImage
             src={imageUrl}
             alt={product.name}
             fill

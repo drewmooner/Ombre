@@ -5,8 +5,7 @@ import {
   isHttpUrl,
   parseDownloadImageQuery,
 } from "@/lib/security/validators";
-
-const ALLOWED_HOSTS = new Set(["images.unsplash.com"]);
+import { isAllowedDownloadImageHost } from "@/lib/shop/image-url";
 
 function resolveTarget(urlParam: string, origin: string): URL | null {
   try {
@@ -20,7 +19,7 @@ function resolveTarget(urlParam: string, origin: string): URL | null {
 
 function isAllowedUrl(target: URL, requestOrigin: string): boolean {
   if (target.origin === requestOrigin) return true;
-  return ALLOWED_HOSTS.has(target.hostname);
+  return isAllowedDownloadImageHost(target.hostname);
 }
 
 export async function GET(request: NextRequest) {

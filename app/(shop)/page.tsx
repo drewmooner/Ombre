@@ -1,26 +1,24 @@
 import { ShopHome } from "@/components/shop-home";
 import { CustomerGreeting } from "@/components/shop/customer-greeting";
-import {
-  getCatalogProductsPage,
-  getCatalogsWithProductCounts,
-} from "@/lib/catalogs.server";
+import { getCatalogsWithProducts } from "@/lib/catalogs.server";
 import { getShopCustomer } from "@/lib/shop-auth";
 import { isShopOpen } from "@/lib/shop-settings";
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const [catalogs, customer, shopOpen] = await Promise.all([
-    getCatalogsWithProductCounts(),
+type HomeProps = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+export default async function Home({ searchParams }: HomeProps) {
+  const { q } = await searchParams;
+  const searchQuery = typeof q === "string" ? q.trim() : "";
+
+  const [catalogSections, customer, shopOpen] = await Promise.all([
+    getCatalogsWithProducts(),
     getShopCustomer(),
     isShopOpen(),
   ]);
-
-  const sorted = [...catalogs].sort((a, b) => a.name.localeCompare(b.name));
-  const firstCatalog = sorted[0];
-  const firstPage = firstCatalog
-    ? await getCatalogProductsPage(firstCatalog.id, 0)
-    : null;
 
   const showGreeting = shopOpen && Boolean(customer);
 
@@ -40,10 +38,8 @@ export default async function Home() {
           </section>
         ) : null}
         <ShopHome
-          catalogs={catalogs}
-          initialCatalogId={firstCatalog?.id ?? ""}
-          initialProducts={firstPage?.products ?? []}
-          initialTotal={firstPage?.total ?? 0}
+          catalogSections={catalogSections}
+          searchQuery={searchQuery}
           compactTop={showGreeting}
         />
       </div>

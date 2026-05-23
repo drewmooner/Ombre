@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import { ProductImage } from "@/components/shop/product-image";
 import { notFound } from "next/navigation";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { SaveProductImageButton } from "@/components/shop/save-product-image-button";
@@ -38,7 +38,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <div className="grid gap-10 lg:grid-cols-2 lg:gap-16">
         <div className="morph-surface overflow-hidden rounded-3xl">
           <div className="relative aspect-[3/4] w-full bg-[var(--background-deep)]">
-            <Image
+            <ProductImage
               src={product.images[0]}
               alt={displayName}
               fill
