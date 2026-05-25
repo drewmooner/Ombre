@@ -156,7 +156,7 @@ export function CartBag({
           <span>{formatNaira(subtotal)}</span>
         </div>
         <p className="mt-2 text-xs leading-relaxed text-[var(--muted)]">
-          Delivery fee added at checkout (door step or park) · Nigeria only
+          Delivery fee is confirmed on WhatsApp after payment · Nigeria only
         </p>
 
         {!signedIn ? (

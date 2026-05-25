@@ -1,20 +1,16 @@
 import type { DeliveryMethod } from "@/lib/delivery-methods";
-import { formatNaira } from "@/lib/format-price";
 
-/** Fixed delivery fees (NGN). */
-export const SHIPPING_FEE_NGN: Record<DeliveryMethod, number> = {
-  doorstep: 1500,
-  park: 5000,
-};
+export const DELIVERY_FEE_CONFIRMATION_LABEL =
+  "Confirmed on WhatsApp after payment";
 
-export function shippingFeeForMethod(method: DeliveryMethod): number {
-  return SHIPPING_FEE_NGN[method];
+export function shippingFeeForMethod(_method: DeliveryMethod): number {
+  return 0;
 }
 
-export function formatShippingFee(method: DeliveryMethod): string {
-  return formatNaira(SHIPPING_FEE_NGN[method]);
+export function formatShippingFee(_method: DeliveryMethod): string {
+  return DELIVERY_FEE_CONFIRMATION_LABEL;
 }
 
-export function orderTotalNgn(subtotal: number, method: DeliveryMethod): number {
-  return Math.round(subtotal) + shippingFeeForMethod(method);
+export function orderTotalNgn(subtotal: number, _method: DeliveryMethod): number {
+  return Math.round(subtotal);
 }

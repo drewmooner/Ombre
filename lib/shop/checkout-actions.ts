@@ -11,7 +11,6 @@ import {
   buildOrderLineItemsFromCart,
   parseCartLinesForCheckout,
 } from "@/lib/checkout/cart-lines";
-import { shippingFeeForMethod } from "@/lib/shipping-fees";
 import { runOrderMaintenance } from "@/lib/order-maintenance";
 import {
   createPendingOrder,
@@ -21,7 +20,7 @@ import type { OrderDelivery, OrderLineItem } from "@/lib/order-types";
 import { deductProductPieces, restoreProductPieces } from "@/lib/product-store";
 import { getShopSettings } from "@/lib/shop-settings";
 import { getShopCustomer } from "@/lib/shop-auth";
-import { sendOrderAwaitingPaymentEmail } from "@/lib/email/order-emails";
+import { sendOrderAwaitingPaymentEmailIfNeeded } from "@/lib/email/order-emails";
 import {
   isCheckoutReady,
   isCheckoutSimulateEnabled,
@@ -149,7 +148,8 @@ export async function startCheckout(
       (sum, i) => sum + i.price * i.quantity,
       0,
     );
-    const shippingFee = shippingFeeForMethod(delivery.method);
+    // Delivery is confirmed after payment on WhatsApp, so we only charge for items now.
+    const shippingFee = 0;
 
     const reserved: OrderLineItem[] = [];
 
@@ -225,7 +225,7 @@ export async function startCheckout(
       await updateOrderPaystackReference(order.id, init.reference);
     }
 
-    const emailResult = await sendOrderAwaitingPaymentEmail(
+    const emailResult = await sendOrderAwaitingPaymentEmailIfNeeded(
       order,
       init.authorizationUrl,
     );

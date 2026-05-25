@@ -1,10 +1,14 @@
 import type { Order } from "@/lib/order-types";
 import { deliveryMethodLabel } from "@/lib/delivery-methods";
 import { formatNaira } from "@/lib/format-price";
-import { formatOrderDate } from "@/lib/format-date";
+import { formatPaymentDeadline } from "@/lib/format-date";
 import {
+  claimAwaitingPaymentEmailSend,
+  claimReceiptEmailSend,
   markReceiptEmailSent,
   findOrderById,
+  releaseAwaitingPaymentEmailClaim,
+  releaseReceiptEmailClaim,
 } from "@/lib/order-store";
 import { emailBrandLogoHtml } from "@/lib/email/logo-attachment";
 import { sendEmail, type SendEmailResult } from "@/lib/email/send-email";
@@ -29,7 +33,7 @@ function orderItemsHtml(order: Order): string {
     .join("");
 }
 
-function orderTotalsHtml(order: Order): string {
+function orderTotalsHtml(order: Order, totalLabel: string): string {
   const method = deliveryMethodLabel(order.delivery.method);
   const rows: string[] = [];
 
@@ -38,13 +42,25 @@ function orderTotalsHtml(order: Order): string {
       `<tr><td style="padding:6px 0;font-size:13px;color:#73666a;">Subtotal</td><td align="right" style="padding:6px 0;font-size:13px;color:#2a2224;">${formatNaira(order.subtotal)}</td></tr>`,
       `<tr><td style="padding:6px 0;font-size:13px;color:#73666a;">Delivery (${method})</td><td align="right" style="padding:6px 0;font-size:13px;color:#2a2224;">${formatNaira(order.shippingFee)}</td></tr>`,
     );
+  } else {
+    rows.push(
+      `<tr><td style="padding:6px 0;font-size:13px;color:#73666a;">Items subtotal</td><td align="right" style="padding:6px 0;font-size:13px;color:#2a2224;">${formatNaira(order.subtotal)}</td></tr>`,
+      `<tr><td style="padding:6px 0;font-size:13px;color:#73666a;">Delivery (${method})</td><td align="right" style="padding:6px 0;font-size:13px;color:#2a2224;">Confirmed on WhatsApp after payment</td></tr>`,
+    );
   }
 
   rows.push(
-    `<tr><td style="padding:10px 0 0;font-weight:600;color:#2a2224;font-size:14px;border-top:1px solid rgba(114,47,55,0.1);">Total</td><td align="right" style="padding:10px 0 0;font-weight:600;color:#722f37;font-size:15px;border-top:1px solid rgba(114,47,55,0.1);">${formatNaira(order.total)}</td></tr>`,
+    `<tr><td style="padding:10px 0 0;font-weight:600;color:#2a2224;font-size:14px;border-top:1px solid rgba(114,47,55,0.1);">${totalLabel}</td><td align="right" style="padding:10px 0 0;font-weight:600;color:#722f37;font-size:15px;border-top:1px solid rgba(114,47,55,0.1);">${formatNaira(order.total)}</td></tr>`,
   );
 
   return rows.join("");
+}
+
+function paymentWindowMinutes(order: Order): number {
+  const created = new Date(order.createdAt).getTime();
+  const expires = new Date(order.expiresAt).getTime();
+  const minutes = Math.round((expires - created) / 60_000);
+  return Number.isFinite(minutes) && minutes > 0 ? minutes : 30;
 }
 
 function deliveryHtml(order: Order): string {
@@ -90,7 +106,8 @@ export async function sendOrderAwaitingPaymentEmail(
   order: Order,
   paymentUrl: string,
 ) {
-  const expires = formatOrderDate(order.expiresAt);
+  const expires = formatPaymentDeadline(order.expiresAt);
+  const timeoutMinutes = paymentWindowMinutes(order);
   const method = deliveryMethodLabel(order.delivery.method);
   const subject = `Complete your Ombré order — ${formatNaira(order.total)}`;
   const text = [
@@ -98,8 +115,12 @@ export async function sendOrderAwaitingPaymentEmail(
     "",
     "Your order is reserved while you complete payment.",
     "",
-    `Total: ${formatNaira(order.total)} (pay by ${expires})`,
+    `Order ID: ${order.id}`,
+    `Payment window: ${timeoutMinutes} minutes`,
+    `Pay now: ${formatNaira(order.total)}`,
+    `Pay before: ${expires}`,
     `Delivery: ${method}`,
+    "Delivery fee will be confirmed on WhatsApp after payment.",
     "",
     `Pay here: ${paymentUrl}`,
     "",
@@ -112,12 +133,18 @@ export async function sendOrderAwaitingPaymentEmail(
     "Complete payment",
     `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#73666a;">
-      Your bag is reserved. Complete Paystack payment before <strong style="color:#2a2224;">${expires}</strong> or the items go back on sale.
+      Your bag is reserved for <strong style="color:#2a2224;">${timeoutMinutes} minutes</strong>. Complete Paystack payment before <strong style="color:#2a2224;">${expires}</strong> or the items go back on sale.
+    </p>
+    <p style="margin:0 0 12px;font-size:13px;color:#73666a;">
+      <strong style="color:#2a2224;">Order ID:</strong> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">${order.id}</span>
     </p>
     <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 16px;">${orderItemsHtml(order)}</table>
-    <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;border-top:1px solid rgba(114,47,55,0.1);padding-top:12px;">${orderTotalsHtml(order)}</table>
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;border-top:1px solid rgba(114,47,55,0.1);padding-top:12px;">${orderTotalsHtml(order, "Pay now")}</table>
     <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9a5a63;">Delivery</p>
     ${deliveryHtml(order)}
+    <p style="margin:16px 0 0;font-size:13px;line-height:1.6;color:#73666a;">
+      We will confirm your delivery fee on WhatsApp after payment using the phone number on this order.
+    </p>
     <p style="margin:24px 0 0;text-align:center;">
       <a href="${paymentUrl}" style="display:inline-block;padding:14px 28px;background:#722f37;color:#fffbf9;text-decoration:none;border-radius:9999px;font-size:14px;font-weight:600;">Pay with Paystack</a>
     </p>`,
@@ -126,15 +153,39 @@ export async function sendOrderAwaitingPaymentEmail(
   return sendEmail({ to: orderRecipientEmail(order), subject, html, text });
 }
 
+export async function sendOrderAwaitingPaymentEmailIfNeeded(
+  order: Order,
+  paymentUrl: string,
+): Promise<SendEmailResult | { ok: true; skipped: true }> {
+  if (order.awaitingPaymentEmailSentAt) {
+    return { ok: true, skipped: true };
+  }
+
+  const claimedAt = new Date().toISOString();
+  const claimed = await claimAwaitingPaymentEmailSend(order.id, claimedAt);
+  if (!claimed) {
+    return { ok: true, skipped: true };
+  }
+
+  const result = await sendOrderAwaitingPaymentEmail(order, paymentUrl);
+  if (result.ok) {
+    return result;
+  }
+
+  await releaseAwaitingPaymentEmailClaim(order.id, claimedAt);
+  return result;
+}
+
 export async function sendOrderPaymentReceivedEmail(order: Order) {
   const method = deliveryMethodLabel(order.delivery.method);
   const subject = `Payment received — Ombré order ${formatNaira(order.total)}`;
   const text = [
     "Thank you!",
     "",
-    `We've received your payment of ${formatNaira(order.total)}.`,
+    `We've received your payment of ${formatNaira(order.total)} for your items.`,
+    `Order ID: ${order.id}`,
     "",
-    "We're preparing your order for delivery across Nigeria.",
+    "We'll confirm your delivery fee on WhatsApp before dispatch.",
     "",
     "Items:",
     ...order.items.map(
@@ -151,10 +202,13 @@ export async function sendOrderPaymentReceivedEmail(order: Order) {
     "Payment received",
     `
     <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#73666a;">
-      Thank you — your payment of <strong style="color:#722f37;">${formatNaira(order.total)}</strong> is confirmed. We'll prepare your order for delivery.
+      Thank you — your payment of <strong style="color:#722f37;">${formatNaira(order.total)}</strong> for your items is confirmed. We'll confirm your delivery fee on WhatsApp before dispatch.
+    </p>
+    <p style="margin:0 0 12px;font-size:13px;color:#73666a;">
+      <strong style="color:#2a2224;">Order ID:</strong> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">${order.id}</span>
     </p>
     <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 16px;">${orderItemsHtml(order)}</table>
-    <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;border-top:1px solid rgba(114,47,55,0.1);padding-top:12px;">${orderTotalsHtml(order)}</table>
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;border-top:1px solid rgba(114,47,55,0.1);padding-top:12px;">${orderTotalsHtml(order, "Amount received")}</table>
     <p style="margin:0 0 8px;font-size:12px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:#9a5a63;">Delivery to</p>
     ${deliveryHtml(order)}`,
   );
@@ -181,17 +235,25 @@ export async function sendPaymentReceiptIfNeeded(
     return { ok: true, skipped: true };
   }
 
+  const claimedAt = new Date().toISOString();
+  const claimed = await claimReceiptEmailSend(order.id, claimedAt);
+  if (!claimed) {
+    return { ok: true, skipped: true };
+  }
+
   const result = await sendOrderPaymentReceivedEmail(order);
   if (result.ok) {
     await markReceiptEmailSent(order.id);
     console.info(
       `[email] Payment receipt sent to ${orderRecipientEmail(order)} (order ${order.id.slice(0, 8)})`,
     );
-  } else {
-    console.error(
-      `[email] Payment receipt failed for ${orderRecipientEmail(order)}:`,
-      result.error,
-    );
+    return result;
   }
+
+  await releaseReceiptEmailClaim(order.id, claimedAt);
+  console.error(
+    `[email] Payment receipt failed for ${orderRecipientEmail(order)}:`,
+    result.error,
+  );
   return result;
 }

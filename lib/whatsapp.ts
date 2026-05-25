@@ -30,3 +30,14 @@ export function buildCartInquiryMessage(
     `Subtotal: ${subtotalLabel}`,
   ].join("\n");
 }
+
+export function buildDeliveryFeeConfirmationMessage(orderId: string): string {
+  return [
+    "Hi Ombré,",
+    "",
+    `My order ID is ${orderId}.`,
+    "I've completed payment and I want to confirm my delivery fee.",
+    "",
+    "Please confirm the delivery fee for my order. Thank you.",
+  ].join("\n");
+}

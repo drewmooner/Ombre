@@ -4,7 +4,6 @@ import { ProductImage } from "@/components/shop/product-image";
 import type { CartItem } from "@/lib/cart-context";
 import { deliveryMethodLabel, type DeliveryMethod } from "@/lib/delivery-methods";
 import { formatNaira } from "@/lib/format-price";
-import { shippingFeeForMethod } from "@/lib/shipping-fees";
 
 type CheckoutOrderSummaryProps = {
   items: CartItem[];
@@ -19,9 +18,6 @@ export function CheckoutOrderSummary({
   subtotal,
   deliveryMethod,
 }: CheckoutOrderSummaryProps) {
-  const shippingFee = shippingFeeForMethod(deliveryMethod);
-  const total = subtotal + shippingFee;
-
   return (
     <>
       <ul className="mt-6 divide-y divide-[rgba(var(--accent-rgb),0.08)]">
@@ -65,14 +61,14 @@ export function CheckoutOrderSummary({
           <span className="checkout-summary__label">
             Delivery · {deliveryMethodLabel(deliveryMethod)}
           </span>
-          <span className="checkout-summary__value tabular-nums">
-            {formatNaira(shippingFee)}
+          <span className="checkout-summary__value text-right text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
+            Confirmed on WhatsApp after payment
           </span>
         </div>
         <div className="checkout-summary__row checkout-summary__row--total">
-          <span className="checkout-summary__label-total">Total due</span>
+          <span className="checkout-summary__label-total">Pay now</span>
           <span className="checkout-summary__total tabular-nums">
-            {formatNaira(total)}
+            {formatNaira(subtotal)}
           </span>
         </div>
       </div>

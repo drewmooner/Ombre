@@ -1,7 +1,7 @@
 import pg from "pg";
 import { getDatabaseUrl } from "./config";
 import { RLS_SQL } from "./rls.sql";
-import { CATALOG_SORT_ORDER_SQL, SCHEMA_SQL } from "./schema.sql";
+import { CATALOG_SORT_ORDER_SQL, ORDER_EMAIL_FIELDS_SQL, SCHEMA_SQL } from "./schema.sql";
 
 const { Client } = pg;
 
@@ -110,6 +110,17 @@ export async function runCatalogSortOrderMigration(): Promise<void> {
 
   await withClient(async (client) => {
     for (const statement of sqlStatements(CATALOG_SORT_ORDER_SQL)) {
+      await client.query(statement);
+    }
+  });
+}
+
+/** Idempotent — adds order email sent markers for idempotent customer emails. */
+export async function runOrderEmailFieldsMigration(): Promise<void> {
+  if (!(await isSchemaApplied())) return;
+
+  await withClient(async (client) => {
+    for (const statement of sqlStatements(ORDER_EMAIL_FIELDS_SQL)) {
       await client.query(statement);
     }
   });

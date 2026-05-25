@@ -65,6 +65,12 @@ function OrderDetailPanel({ order }: { order: Order }) {
         <section>
           <h4 className="store-orders-detail-heading">Timeline</h4>
           <ul className="mt-2 space-y-1 text-sm text-[var(--muted)]">
+            <li>
+              Order ID{" "}
+              <code className="rounded bg-[rgba(var(--accent-rgb),0.08)] px-1.5 py-0.5 text-[11px] text-[var(--foreground)]">
+                {order.id}
+              </code>
+            </li>
             <li>Placed {formatOrderDate(order.createdAt)}</li>
             {order.status === "pending" ? (
               <li className="text-amber-800">
@@ -193,6 +199,9 @@ function OrderMobileCard({
       <div className="store-orders-mobile-card-head">
         <div className="min-w-0 flex-1">
           <p className="text-xs text-[var(--muted)]">{formatOrderDate(order.createdAt)}</p>
+          <p className="mt-1 break-all font-mono text-[11px] text-[var(--muted)]">
+            {order.id}
+          </p>
           <p
             className={`mt-1 truncate text-sm font-semibold${active ? " text-[var(--accent)]" : ""}`}
             title={order.customerEmail}
@@ -299,7 +308,10 @@ export function OrdersAdminList({ orders }: OrdersAdminListProps) {
                     className={`store-orders-table-row${active ? " store-orders-table-row--active" : ""}${expanded ? " store-orders-table-row--expanded" : ""}`}
                   >
                     <td className="whitespace-nowrap text-sm text-[var(--muted)]">
-                      {formatOrderDate(order.createdAt)}
+                      <p>{formatOrderDate(order.createdAt)}</p>
+                      <p className="mt-1 max-w-[11rem] truncate font-mono text-[11px] text-[var(--muted)]">
+                        {order.id}
+                      </p>
                     </td>
                     <td>
                       <p

@@ -15,9 +15,10 @@ export default async function StoreOrdersPage() {
           <p className="store-eyebrow">Store dashboard</p>
           <h1 className="store-title">Orders</h1>
           <p className="store-lead">
-            Mark orders as delivered after payment and shipping. Only{" "}
-            <strong>paid</strong> and <strong>delivered</strong> orders show in
-            customer order history.
+            Mark orders as delivered after payment and dispatch. The order ID shown
+            in each order matches the one customers send in the WhatsApp
+            delivery-fee confirmation message. Only <strong>paid</strong> and{" "}
+            <strong>delivered</strong> orders show in customer order history.
           </p>
         </div>
       </header>

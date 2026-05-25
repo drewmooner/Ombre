@@ -2,8 +2,6 @@ import {
   LegalDocument,
   LegalSection,
 } from "@/components/legal/legal-document";
-import { formatNaira } from "@/lib/format-price";
-import { SHIPPING_FEE_NGN } from "@/lib/shipping-fees";
 
 export const metadata = {
   title: "Terms of Service — Ombré",
@@ -38,17 +36,14 @@ export default function TermsOfServicePage() {
       </LegalSection>
 
       <LegalSection title="Delivery">
-        <ul>
-          <li>
-            <strong>Door step</strong> (Akwa Ibom) — {formatNaira(SHIPPING_FEE_NGN.doorstep)}
-          </li>
-          <li>
-            <strong>Park</strong> (other states) — {formatNaira(SHIPPING_FEE_NGN.park)}
-          </li>
-        </ul>
         <p>
-          Delivery is typically 3–7 days after payment is confirmed. Your total at
-          checkout is items plus the delivery fee you select.
+          Ombré offers <strong>Door step</strong> delivery within Akwa Ibom and{" "}
+          <strong>Park</strong> delivery for other states.
+        </p>
+        <p>
+          Delivery is typically 3–7 days after payment is confirmed. Delivery fee
+          is not fixed at checkout and will be confirmed with you on WhatsApp
+          after payment based on your location and delivery method.
         </p>
       </LegalSection>
 
@@ -56,8 +51,8 @@ export default function TermsOfServicePage() {
         <p>
           Ombré accepts returns only for damaged, faulty, or wrong items. Message
           Ombré on WhatsApp within 48 hours of delivery with photos and your order
-          reference. Approved refunds go back via Paystack. Delivery fees are not
-          refunded unless Ombré made the error.
+          reference. Approved refunds go back via Paystack. Confirmed delivery
+          fees are not refunded unless Ombré made the error.
         </p>
       </LegalSection>
 

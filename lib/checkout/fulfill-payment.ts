@@ -89,7 +89,9 @@ export async function fulfillOrderPaymentSimulated(
   }
 
   if (order.status === "paid" || order.status === "delivered") {
-    await sendPaymentReceiptIfNeeded(order.id);
+    if (!options?.skipReceiptEmail) {
+      await sendPaymentReceiptIfNeeded(order.id);
+    }
     maybeRevalidateAfterPayment(options);
     return { ok: true, orderId: order.id, alreadyPaid: true };
   }
@@ -157,7 +159,9 @@ export async function fulfillOrderPayment(
     }
 
     if (order.status === "paid" || order.status === "delivered") {
-      await sendPaymentReceiptIfNeeded(order.id);
+      if (!options?.skipReceiptEmail) {
+        await sendPaymentReceiptIfNeeded(order.id);
+      }
       maybeRevalidateAfterPayment(options);
       return { ok: true, orderId: order.id, alreadyPaid: true };
     }

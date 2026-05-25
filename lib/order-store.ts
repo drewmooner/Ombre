@@ -25,6 +25,78 @@ export async function markReceiptEmailSent(orderId: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+export async function claimAwaitingPaymentEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  if (!usesSupabase()) {
+    return json.jsonClaimAwaitingPaymentEmailSend(orderId, claimedAt);
+  }
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ awaiting_payment_email_sent_at: claimedAt })
+    .eq("id", orderId)
+    .is("awaiting_payment_email_sent_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.id);
+}
+
+export async function releaseAwaitingPaymentEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonReleaseAwaitingPaymentEmailClaim(orderId, claimedAt);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ awaiting_payment_email_sent_at: null })
+    .eq("id", orderId)
+    .eq("awaiting_payment_email_sent_at", claimedAt);
+  if (error) throw new Error(error.message);
+}
+
+export async function claimReceiptEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  if (!usesSupabase()) {
+    return json.jsonClaimReceiptEmailSend(orderId, claimedAt);
+  }
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ receipt_email_sent_at: claimedAt })
+    .eq("id", orderId)
+    .is("receipt_email_sent_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.id);
+}
+
+export async function releaseReceiptEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonReleaseReceiptEmailClaim(orderId, claimedAt);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ receipt_email_sent_at: null })
+    .eq("id", orderId)
+    .eq("receipt_email_sent_at", claimedAt);
+  if (error) throw new Error(error.message);
+}
+
 export async function listOrders(): Promise<Order[]> {
   if (!usesSupabase()) return json.jsonListOrders();
   await prepareDb();

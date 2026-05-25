@@ -29,6 +29,7 @@ export default async function CheckoutCompletePage({
 
   let message: string;
   let success = false;
+  let orderId: string | null = null;
 
   try {
     const result = await fulfillOrderPayment(reference, {
@@ -40,8 +41,9 @@ export default async function CheckoutCompletePage({
     if (!result.ok) {
       message = result.error;
     } else {
+      orderId = result.orderId;
       message =
-        "Thank you — your payment is confirmed. We've emailed you a receipt and will prepare your order for delivery.";
+        "Thank you — your payment is confirmed. We've emailed you a receipt, and your delivery fee will be confirmed with you on WhatsApp.";
     }
   } catch (e) {
     console.error("[checkout/complete] page error:", e);
@@ -53,7 +55,7 @@ export default async function CheckoutCompletePage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12 sm:px-6">
-      <CheckoutCompleteClient success={success} message={message} />
+      <CheckoutCompleteClient success={success} message={message} orderId={orderId} />
     </div>
   );
 }

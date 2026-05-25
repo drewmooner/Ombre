@@ -17,6 +17,7 @@ import { isSupabaseConfigured } from "./config";
 import {
   isSchemaApplied,
   runCatalogSortOrderMigration,
+  runOrderEmailFieldsMigration,
   runRlsMigration,
   runSchemaMigration,
 } from "./migrate";
@@ -42,7 +43,7 @@ const BUILTIN_SETTINGS: ShopSettings = {
   defaultName: "Handkerchief 2pcs",
   shopOpen: true,
   shippingFeeNgn: 0,
-  paymentTimeoutMinutes: 45,
+  paymentTimeoutMinutes: 30,
 };
 
 let ready: Promise<void> | null = null;
@@ -223,6 +224,7 @@ async function setupDatabase(): Promise<void> {
 
   await runRlsMigration();
   await runCatalogSortOrderMigration();
+  await runOrderEmailFieldsMigration();
 
   try {
     await ensureProductImagesBucket();

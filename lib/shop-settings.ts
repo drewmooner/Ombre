@@ -12,17 +12,25 @@ export type ShopSettings = {
 };
 
 const SETTINGS_ID = "default";
+export const ORDER_PAYMENT_TIMEOUT_MINUTES = 30;
 
 const BUILTIN: ShopSettings = {
   defaultPrice: 12000,
   defaultName: "Handkerchief 2pcs",
   shopOpen: true,
-  shippingFeeNgn: 2500,
-  paymentTimeoutMinutes: 45,
+  shippingFeeNgn: 0,
+  paymentTimeoutMinutes: ORDER_PAYMENT_TIMEOUT_MINUTES,
 };
 
+function normalizeSettings(settings: ShopSettings): ShopSettings {
+  return {
+    ...settings,
+    paymentTimeoutMinutes: ORDER_PAYMENT_TIMEOUT_MINUTES,
+  };
+}
+
 async function readSettings(): Promise<ShopSettings> {
-  if (!usesSupabase()) return json.jsonGetShopSettings();
+  if (!usesSupabase()) return normalizeSettings(await json.jsonGetShopSettings());
   await prepareDb();
   const { data, error } = await getSupabaseAdmin()
     .from("shop_settings")
@@ -30,18 +38,19 @@ async function readSettings(): Promise<ShopSettings> {
     .eq("id", SETTINGS_ID)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  return data ? settingsFromRow(data) : BUILTIN;
+  return normalizeSettings(data ? settingsFromRow(data) : BUILTIN);
 }
 
 async function writeSettings(settings: ShopSettings): Promise<void> {
+  const normalized = normalizeSettings(settings);
   if (!usesSupabase()) {
-    await json.jsonWriteShopSettings(settings);
+    await json.jsonWriteShopSettings(normalized);
     return;
   }
   await prepareDb();
   const { error } = await getSupabaseAdmin()
     .from("shop_settings")
-    .upsert(settingsToRow(settings), { onConflict: "id" });
+    .upsert(settingsToRow(normalized), { onConflict: "id" });
   if (error) throw new Error(error.message);
 }
 

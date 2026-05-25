@@ -228,8 +228,8 @@ const BUILTIN_SETTINGS: ShopSettings = {
   defaultPrice: 12000,
   defaultName: "Handkerchief 2pcs",
   shopOpen: true,
-  shippingFeeNgn: 2500,
-  paymentTimeoutMinutes: 45,
+  shippingFeeNgn: 0,
+  paymentTimeoutMinutes: 30,
 };
 
 export async function jsonGetShopSettings(): Promise<ShopSettings> {
@@ -371,11 +371,15 @@ function normalizeOrder(raw: unknown): Order | null {
     expiresAt:
       typeof row.expiresAt === "string"
         ? row.expiresAt
-        : new Date(Date.now() + 45 * 60_000).toISOString(),
+        : new Date(Date.now() + 30 * 60_000).toISOString(),
     paidAt: typeof row.paidAt === "string" ? row.paidAt : undefined,
     deliveredAt: typeof row.deliveredAt === "string" ? row.deliveredAt : undefined,
     paystackReference:
       typeof row.paystackReference === "string" ? row.paystackReference : undefined,
+    awaitingPaymentEmailSentAt:
+      typeof row.awaitingPaymentEmailSentAt === "string"
+        ? row.awaitingPaymentEmailSentAt
+        : undefined,
     receiptEmailSentAt:
       typeof row.receiptEmailSentAt === "string" ? row.receiptEmailSentAt : undefined,
   };
@@ -469,6 +473,68 @@ export async function jsonMarkReceiptEmailSent(orderId: string): Promise<void> {
   orders[index] = {
     ...orders[index],
     receiptEmailSentAt: new Date().toISOString(),
+  };
+  await writeOrders(orders);
+}
+
+export async function jsonClaimAwaitingPaymentEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return false;
+  if (orders[index].awaitingPaymentEmailSentAt) return false;
+  orders[index] = {
+    ...orders[index],
+    awaitingPaymentEmailSentAt: claimedAt,
+  };
+  await writeOrders(orders);
+  return true;
+}
+
+export async function jsonReleaseAwaitingPaymentEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  if (orders[index].awaitingPaymentEmailSentAt !== claimedAt) return;
+  orders[index] = {
+    ...orders[index],
+    awaitingPaymentEmailSentAt: undefined,
+  };
+  await writeOrders(orders);
+}
+
+export async function jsonClaimReceiptEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return false;
+  if (orders[index].receiptEmailSentAt) return false;
+  orders[index] = {
+    ...orders[index],
+    receiptEmailSentAt: claimedAt,
+  };
+  await writeOrders(orders);
+  return true;
+}
+
+export async function jsonReleaseReceiptEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  if (orders[index].receiptEmailSentAt !== claimedAt) return;
+  orders[index] = {
+    ...orders[index],
+    receiptEmailSentAt: undefined,
   };
   await writeOrders(orders);
 }

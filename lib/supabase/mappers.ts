@@ -56,6 +56,7 @@ export type OrderRow = {
   shipping_fee: number;
   total: number;
   paystack_reference: string | null;
+  awaiting_payment_email_sent_at: string | null;
   receipt_email_sent_at: string | null;
   created_at: string;
   paid_at: string | null;
@@ -172,6 +173,7 @@ export function orderFromRow(row: OrderRow): Order {
     shippingFee: row.shipping_fee,
     total: row.total,
     paystackReference: row.paystack_reference ?? undefined,
+    awaitingPaymentEmailSentAt: row.awaiting_payment_email_sent_at ?? undefined,
     receiptEmailSentAt: row.receipt_email_sent_at ?? undefined,
     createdAt: row.created_at,
     paidAt: row.paid_at ?? undefined,
@@ -192,6 +194,7 @@ export function orderToRow(order: Order): OrderRow {
     shipping_fee: order.shippingFee,
     total: order.total,
     paystack_reference: order.paystackReference ?? null,
+    awaiting_payment_email_sent_at: order.awaitingPaymentEmailSentAt ?? null,
     receipt_email_sent_at: order.receiptEmailSentAt ?? null,
     created_at: order.createdAt,
     paid_at: order.paidAt ?? null,

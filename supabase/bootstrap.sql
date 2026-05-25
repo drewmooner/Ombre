@@ -38,7 +38,7 @@ create table if not exists public.shop_settings (
   default_name text not null default 'Handkerchief 2pcs',
   shop_open boolean not null default true,
   shipping_fee_ngn integer not null default 0,
-  payment_timeout_minutes integer not null default 45
+  payment_timeout_minutes integer not null default 30
 );
 
 create table if not exists public.shop_customers (
@@ -58,6 +58,7 @@ create table if not exists public.orders (
   shipping_fee integer not null default 0,
   total integer not null,
   paystack_reference text,
+  awaiting_payment_email_sent_at timestamptz,
   receipt_email_sent_at timestamptz,
   created_at timestamptz not null default now(),
   paid_at timestamptz,

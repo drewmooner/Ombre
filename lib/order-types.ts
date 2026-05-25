@@ -1,4 +1,5 @@
 import type { DeliveryMethod } from "./delivery-methods";
+import { formatPaymentDeadline } from "./format-date";
 
 export type OrderStatus = "pending" | "paid" | "delivered" | "expired";
 
@@ -27,9 +28,9 @@ export type Order = {
   customerId: string;
   customerEmail: string;
   items: OrderLineItem[];
-  /** Sum of product line items — order total matches this (no shipping added) */
+  /** Sum of product line items before any later delivery-fee confirmation. */
   subtotal: number;
-  /** Legacy field; always 0 for new orders */
+  /** Delivery fee charged at checkout. New orders keep this at 0 and confirm later. */
   shippingFee: number;
   total: number;
   delivery: OrderDelivery;
@@ -39,6 +40,8 @@ export type Order = {
   paidAt?: string;
   deliveredAt?: string;
   paystackReference?: string;
+  /** Set after the awaiting-payment email is sent successfully */
+  awaitingPaymentEmailSentAt?: string;
   /** Set after payment confirmation email is sent successfully */
   receiptEmailSentAt?: string;
 };
@@ -70,9 +73,9 @@ export function customerOrderStatusLabel(status: OrderStatus): string {
 export function customerOrderStatusHint(order: Order): string {
   switch (order.status) {
     case "pending":
-      return `Complete payment before ${new Date(order.expiresAt).toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" })} or stock is released.`;
+      return `Complete payment before ${formatPaymentDeadline(order.expiresAt)} or stock is released.`;
     case "paid":
-      return "Payment received — we're preparing your order for delivery.";
+      return "Payment received — we’ll confirm your delivery fee on WhatsApp before dispatch.";
     case "delivered":
       return order.deliveredAt
         ? `Delivered ${new Date(order.deliveredAt).toLocaleString("en-NG", { dateStyle: "medium" })}.`

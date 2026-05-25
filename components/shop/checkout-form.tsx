@@ -10,7 +10,6 @@ import {
 import { startCheckout, type CheckoutState } from "@/lib/shop/checkout-actions";
 import { NIGERIA_STATES } from "@/lib/nigeria-states";
 import { formatNaira } from "@/lib/format-price";
-import { formatShippingFee } from "@/lib/shipping-fees";
 import { MorphButton } from "@/components/morph-button";
 import { useActionRedirect } from "@/components/use-action-redirect";
 import { CheckoutOrderSummary } from "@/components/shop/checkout-order-summary";
@@ -37,9 +36,6 @@ export function CheckoutForm({
   const [state, formAction, pending] = useActionState(startCheckout, initial);
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>("doorstep");
-  const shippingFee =
-    DELIVERY_METHOD_OPTIONS.find((o) => o.value === deliveryMethod)?.feeNgn ?? 0;
-  const total = subtotal + shippingFee;
 
   const cartJson = useMemo(
     () =>
@@ -119,13 +115,8 @@ export function CheckoutForm({
                     className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--accent)]"
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-                      <span className="text-sm font-semibold text-[var(--foreground)]">
-                        {option.title}
-                      </span>
-                      <span className="text-sm font-semibold tabular-nums text-[var(--accent)]">
-                        {formatShippingFee(option.value)}
-                      </span>
+                    <span className="text-sm font-semibold text-[var(--foreground)]">
+                      {option.title}
                     </span>
                     <span className="mt-1 block text-xs leading-relaxed text-[var(--muted)]">
                       {option.description}
@@ -135,6 +126,12 @@ export function CheckoutForm({
               ))}
             </div>
           </fieldset>
+
+          <p className="rounded-xl border border-[rgba(var(--accent-rgb),0.14)] bg-[rgba(var(--accent-rgb),0.05)] px-4 py-3 text-sm leading-relaxed text-[var(--foreground)]">
+            Delivery fee is <strong>not charged at checkout</strong>. After payment,
+            we’ll confirm the delivery fee with you on WhatsApp using the number you
+            enter below.
+          </p>
 
           <div className="grid gap-5 sm:grid-cols-2">
             <label className="checkout-label sm:col-span-2">
@@ -239,8 +236,9 @@ export function CheckoutForm({
 
         <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
           Items stay reserved for {paymentTimeoutMinutes} minutes while you pay.
-          Delivery fee is based on your selected method above. If payment is not
-          completed in time, stock returns to the shop.
+          You are paying for the items now; delivery fee will be confirmed on
+          WhatsApp after payment. If payment is not completed in time, stock
+          returns to the shop.
         </p>
       </section>
 
@@ -257,9 +255,9 @@ export function CheckoutForm({
               ? "Completing test order…"
               : "Starting checkout…"
             : simulateCheckout
-              ? `Place test order · ${formatNaira(total)}`
+              ? `Place test order · ${formatNaira(subtotal)}`
               : checkoutReady
-                ? `Pay ${formatNaira(total)} with Paystack`
+                ? `Pay ${formatNaira(subtotal)} with Paystack`
                 : "Configure checkout"}
         </MorphButton>
 
