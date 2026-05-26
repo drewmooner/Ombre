@@ -376,9 +376,19 @@ function normalizeOrder(raw: unknown): Order | null {
     deliveredAt: typeof row.deliveredAt === "string" ? row.deliveredAt : undefined,
     paystackReference:
       typeof row.paystackReference === "string" ? row.paystackReference : undefined,
+    paymentUrl:
+      typeof row.paymentUrl === "string" ? row.paymentUrl : undefined,
     awaitingPaymentEmailSentAt:
       typeof row.awaitingPaymentEmailSentAt === "string"
         ? row.awaitingPaymentEmailSentAt
+        : undefined,
+    paymentReminderEmailSentAt:
+      typeof row.paymentReminderEmailSentAt === "string"
+        ? row.paymentReminderEmailSentAt
+        : undefined,
+    expiredEmailSentAt:
+      typeof row.expiredEmailSentAt === "string"
+        ? row.expiredEmailSentAt
         : undefined,
     receiptEmailSentAt:
       typeof row.receiptEmailSentAt === "string" ? row.receiptEmailSentAt : undefined,
@@ -477,6 +487,42 @@ export async function jsonMarkReceiptEmailSent(orderId: string): Promise<void> {
   await writeOrders(orders);
 }
 
+export async function jsonMarkPaymentReminderEmailSent(orderId: string): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  orders[index] = {
+    ...orders[index],
+    paymentReminderEmailSentAt: new Date().toISOString(),
+  };
+  await writeOrders(orders);
+}
+
+export async function jsonMarkExpiredEmailSent(orderId: string): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  orders[index] = {
+    ...orders[index],
+    expiredEmailSentAt: new Date().toISOString(),
+  };
+  await writeOrders(orders);
+}
+
+export async function jsonUpdateOrderPaymentUrl(
+  orderId: string,
+  paymentUrl: string,
+): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  orders[index] = {
+    ...orders[index],
+    paymentUrl,
+  };
+  await writeOrders(orders);
+}
+
 export async function jsonClaimAwaitingPaymentEmailSend(
   orderId: string,
   claimedAt: string,
@@ -491,6 +537,68 @@ export async function jsonClaimAwaitingPaymentEmailSend(
   };
   await writeOrders(orders);
   return true;
+}
+
+export async function jsonClaimPaymentReminderEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return false;
+  if (orders[index].paymentReminderEmailSentAt) return false;
+  orders[index] = {
+    ...orders[index],
+    paymentReminderEmailSentAt: claimedAt,
+  };
+  await writeOrders(orders);
+  return true;
+}
+
+export async function jsonReleasePaymentReminderEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  if (orders[index].paymentReminderEmailSentAt !== claimedAt) return;
+  orders[index] = {
+    ...orders[index],
+    paymentReminderEmailSentAt: undefined,
+  };
+  await writeOrders(orders);
+}
+
+export async function jsonClaimExpiredEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return false;
+  if (orders[index].expiredEmailSentAt) return false;
+  orders[index] = {
+    ...orders[index],
+    expiredEmailSentAt: claimedAt,
+  };
+  await writeOrders(orders);
+  return true;
+}
+
+export async function jsonReleaseExpiredEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  const orders = await readOrders();
+  const index = orders.findIndex((o) => o.id === orderId);
+  if (index === -1) return;
+  if (orders[index].expiredEmailSentAt !== claimedAt) return;
+  orders[index] = {
+    ...orders[index],
+    expiredEmailSentAt: undefined,
+  };
+  await writeOrders(orders);
 }
 
 export async function jsonReleaseAwaitingPaymentEmailClaim(

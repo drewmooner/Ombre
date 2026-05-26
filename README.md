@@ -14,6 +14,7 @@ Resend sender setup:
 - OTP/sign-in emails use `RESEND_FROM_AUTH`
 - order/payment emails use `RESEND_FROM_ORDERS`
 - both addresses must be verified under your Resend domain before production sending
+- set `CRON_SECRET` so Vercel can call `/api/cron/orders` securely for reminder and expiry emails
 
 ## Deploy
 

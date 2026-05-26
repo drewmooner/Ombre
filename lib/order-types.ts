@@ -40,8 +40,14 @@ export type Order = {
   paidAt?: string;
   deliveredAt?: string;
   paystackReference?: string;
+  /** Saved Paystack checkout URL for reminder emails while the order is still pending. */
+  paymentUrl?: string;
   /** Set after the awaiting-payment email is sent successfully */
   awaitingPaymentEmailSentAt?: string;
+  /** Set after the payment reminder email is sent successfully */
+  paymentReminderEmailSentAt?: string;
+  /** Set after the order-expired email is sent successfully */
+  expiredEmailSentAt?: string;
   /** Set after payment confirmation email is sent successfully */
   receiptEmailSentAt?: string;
 };

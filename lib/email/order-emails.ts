@@ -4,11 +4,15 @@ import { formatNaira } from "@/lib/format-price";
 import { formatPaymentDeadline } from "@/lib/format-date";
 import {
   claimAwaitingPaymentEmailSend,
+  claimExpiredEmailSend,
+  claimPaymentReminderEmailSend,
   claimReceiptEmailSend,
-  markReceiptEmailSent,
   findOrderById,
   releaseAwaitingPaymentEmailClaim,
+  releaseExpiredEmailClaim,
+  releasePaymentReminderEmailClaim,
   releaseReceiptEmailClaim,
+  markReceiptEmailSent,
 } from "@/lib/order-store";
 import { emailBrandLogoHtml } from "@/lib/email/logo-attachment";
 import { sendEmail, type SendEmailResult } from "@/lib/email/send-email";
@@ -179,6 +183,146 @@ export async function sendOrderAwaitingPaymentEmailIfNeeded(
   }
 
   await releaseAwaitingPaymentEmailClaim(order.id, claimedAt);
+  return result;
+}
+
+export async function sendOrderPaymentReminderEmail(order: Order) {
+  if (!order.paymentUrl) {
+    return { ok: false as const, error: "Order does not have a payment URL" };
+  }
+
+  const expires = formatPaymentDeadline(order.expiresAt);
+  const subject = `Reminder: complete your 0mbré payment`;
+  const text = [
+    "Hi,",
+    "",
+    "Your order is still waiting for payment.",
+    "",
+    `Order ID: ${order.id}`,
+    `Amount due: ${formatNaira(order.total)}`,
+    `Pay before: ${expires}`,
+    "",
+    `Pay here: ${order.paymentUrl}`,
+    "",
+    "If payment is not completed in time, the items will return to the shop.",
+    "",
+    "— 0mbré",
+  ].join("\n");
+
+  const html = emailShell(
+    "Payment reminder",
+    `
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#73666a;">
+      Your order is still reserved, but payment must be completed before
+      <strong style="color:#2a2224;">${expires}</strong>.
+    </p>
+    <p style="margin:0 0 12px;font-size:13px;color:#73666a;">
+      <strong style="color:#2a2224;">Order ID:</strong> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">${order.id}</span>
+    </p>
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;border-top:1px solid rgba(114,47,55,0.1);padding-top:12px;">${orderTotalsHtml(order, "Amount due")}</table>
+    <p style="margin:0 0 16px;font-size:13px;line-height:1.6;color:#73666a;">
+      Delivery fee will still be confirmed on WhatsApp after payment.
+    </p>
+    <p style="margin:24px 0 0;text-align:center;">
+      <a href="${order.paymentUrl}" style="display:inline-block;padding:14px 28px;background:#722f37;color:#fffbf9;text-decoration:none;border-radius:9999px;font-size:14px;font-weight:600;">Complete payment</a>
+    </p>`,
+  );
+
+  return sendEmail({
+    to: orderRecipientEmail(order),
+    subject,
+    html,
+    text,
+    sender: "orders",
+  });
+}
+
+export async function sendOrderPaymentReminderEmailIfNeeded(
+  order: Order,
+): Promise<SendEmailResult | { ok: true; skipped: true }> {
+  if (order.status !== "pending" || order.paymentReminderEmailSentAt || !order.paymentUrl) {
+    return { ok: true, skipped: true };
+  }
+
+  const claimedAt = new Date().toISOString();
+  const claimed = await claimPaymentReminderEmailSend(order.id, claimedAt);
+  if (!claimed) {
+    return { ok: true, skipped: true };
+  }
+
+  const result = await sendOrderPaymentReminderEmail(order);
+  if (result.ok) {
+    return result;
+  }
+
+  await releasePaymentReminderEmailClaim(order.id, claimedAt);
+  return result;
+}
+
+export async function sendOrderExpiredEmail(order: Order) {
+  const expiredAt = formatPaymentDeadline(order.expiresAt);
+  const subject = `Your 0mbré order has expired`;
+  const text = [
+    "Hi,",
+    "",
+    "Your order expired before payment was completed.",
+    "",
+    `Order ID: ${order.id}`,
+    `Expired at: ${expiredAt}`,
+    "",
+    "The reserved items have been returned to the shop.",
+    "",
+    "You can place a new order at any time if the items are still available.",
+    "",
+    "— 0mbré",
+  ].join("\n");
+
+  const html = emailShell(
+    "Order expired",
+    `
+    <p style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#73666a;">
+      Your order expired before payment was completed, so the reserved items have been returned to the shop.
+    </p>
+    <p style="margin:0 0 12px;font-size:13px;color:#73666a;">
+      <strong style="color:#2a2224;">Order ID:</strong> <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;">${order.id}</span>
+    </p>
+    <p style="margin:0 0 20px;font-size:13px;color:#73666a;">
+      <strong style="color:#2a2224;">Expired at:</strong> ${expiredAt}
+    </p>
+    <table width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px;border-top:1px solid rgba(114,47,55,0.1);padding-top:12px;">${orderTotalsHtml(order, "Order total")}</table>
+    <p style="margin:0;font-size:13px;line-height:1.6;color:#73666a;">
+      If you still want the items and they are available, you can place a new order from the shop.
+    </p>`,
+  );
+
+  return sendEmail({
+    to: orderRecipientEmail(order),
+    subject,
+    html,
+    text,
+    sender: "orders",
+  });
+}
+
+export async function sendOrderExpiredEmailIfNeeded(
+  order: Order,
+): Promise<SendEmailResult | { ok: true; skipped: true }> {
+  if (order.status !== "expired" || order.expiredEmailSentAt) {
+    return { ok: true, skipped: true };
+  }
+
+  const claimedAt = new Date().toISOString();
+  const claimed = await claimExpiredEmailSend(order.id, claimedAt);
+  if (!claimed) {
+    return { ok: true, skipped: true };
+  }
+
+  const result = await sendOrderExpiredEmail(order);
+  if (result.ok) {
+    return result;
+  }
+
+  await releaseExpiredEmailClaim(order.id, claimedAt);
   return result;
 }
 

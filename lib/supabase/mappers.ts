@@ -56,7 +56,10 @@ export type OrderRow = {
   shipping_fee: number;
   total: number;
   paystack_reference: string | null;
+  payment_url: string | null;
   awaiting_payment_email_sent_at: string | null;
+  payment_reminder_email_sent_at: string | null;
+  expired_email_sent_at: string | null;
   receipt_email_sent_at: string | null;
   created_at: string;
   paid_at: string | null;
@@ -173,7 +176,10 @@ export function orderFromRow(row: OrderRow): Order {
     shippingFee: row.shipping_fee,
     total: row.total,
     paystackReference: row.paystack_reference ?? undefined,
+    paymentUrl: row.payment_url ?? undefined,
     awaitingPaymentEmailSentAt: row.awaiting_payment_email_sent_at ?? undefined,
+    paymentReminderEmailSentAt: row.payment_reminder_email_sent_at ?? undefined,
+    expiredEmailSentAt: row.expired_email_sent_at ?? undefined,
     receiptEmailSentAt: row.receipt_email_sent_at ?? undefined,
     createdAt: row.created_at,
     paidAt: row.paid_at ?? undefined,
@@ -194,7 +200,10 @@ export function orderToRow(order: Order): OrderRow {
     shipping_fee: order.shippingFee,
     total: order.total,
     paystack_reference: order.paystackReference ?? null,
+    payment_url: order.paymentUrl ?? null,
     awaiting_payment_email_sent_at: order.awaitingPaymentEmailSentAt ?? null,
+    payment_reminder_email_sent_at: order.paymentReminderEmailSentAt ?? null,
+    expired_email_sent_at: order.expiredEmailSentAt ?? null,
     receipt_email_sent_at: order.receiptEmailSentAt ?? null,
     created_at: order.createdAt,
     paid_at: order.paidAt ?? null,

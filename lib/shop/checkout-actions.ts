@@ -220,10 +220,22 @@ export async function startCheckout(
       return { error: init.error };
     }
 
-    if (init.reference && init.reference !== ref) {
-      const { updateOrderPaystackReference } = await import("@/lib/order-store");
-      await updateOrderPaystackReference(order.id, init.reference);
+    {
+      const { updateOrderPaystackReference, updateOrderPaymentUrl } = await import(
+        "@/lib/order-store"
+      );
+      if (init.reference && init.reference !== ref) {
+        await updateOrderPaystackReference(order.id, init.reference);
+      }
+      await updateOrderPaymentUrl(order.id, init.authorizationUrl);
     }
+
+    order = {
+      ...order,
+      paystackReference:
+        init.reference && init.reference !== ref ? init.reference : order.paystackReference,
+      paymentUrl: init.authorizationUrl,
+    };
 
     const emailResult = await sendOrderAwaitingPaymentEmailIfNeeded(
       order,

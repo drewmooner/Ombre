@@ -25,6 +25,48 @@ export async function markReceiptEmailSent(orderId: string): Promise<void> {
   if (error) throw new Error(error.message);
 }
 
+export async function markPaymentReminderEmailSent(orderId: string): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonMarkPaymentReminderEmailSent(orderId);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ payment_reminder_email_sent_at: new Date().toISOString() })
+    .eq("id", orderId);
+  if (error) throw new Error(error.message);
+}
+
+export async function markExpiredEmailSent(orderId: string): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonMarkExpiredEmailSent(orderId);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ expired_email_sent_at: new Date().toISOString() })
+    .eq("id", orderId);
+  if (error) throw new Error(error.message);
+}
+
+export async function updateOrderPaymentUrl(
+  orderId: string,
+  paymentUrl: string,
+): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonUpdateOrderPaymentUrl(orderId, paymentUrl);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ payment_url: paymentUrl })
+    .eq("id", orderId);
+  if (error) throw new Error(error.message);
+}
+
 export async function claimAwaitingPaymentEmailSend(
   orderId: string,
   claimedAt: string,
@@ -58,6 +100,78 @@ export async function releaseAwaitingPaymentEmailClaim(
     .update({ awaiting_payment_email_sent_at: null })
     .eq("id", orderId)
     .eq("awaiting_payment_email_sent_at", claimedAt);
+  if (error) throw new Error(error.message);
+}
+
+export async function claimPaymentReminderEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  if (!usesSupabase()) {
+    return json.jsonClaimPaymentReminderEmailSend(orderId, claimedAt);
+  }
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ payment_reminder_email_sent_at: claimedAt })
+    .eq("id", orderId)
+    .is("payment_reminder_email_sent_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.id);
+}
+
+export async function releasePaymentReminderEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonReleasePaymentReminderEmailClaim(orderId, claimedAt);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ payment_reminder_email_sent_at: null })
+    .eq("id", orderId)
+    .eq("payment_reminder_email_sent_at", claimedAt);
+  if (error) throw new Error(error.message);
+}
+
+export async function claimExpiredEmailSend(
+  orderId: string,
+  claimedAt: string,
+): Promise<boolean> {
+  if (!usesSupabase()) {
+    return json.jsonClaimExpiredEmailSend(orderId, claimedAt);
+  }
+  await prepareDb();
+  const { data, error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ expired_email_sent_at: claimedAt })
+    .eq("id", orderId)
+    .is("expired_email_sent_at", null)
+    .select("id")
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return Boolean(data?.id);
+}
+
+export async function releaseExpiredEmailClaim(
+  orderId: string,
+  claimedAt: string,
+): Promise<void> {
+  if (!usesSupabase()) {
+    await json.jsonReleaseExpiredEmailClaim(orderId, claimedAt);
+    return;
+  }
+  await prepareDb();
+  const { error } = await getSupabaseAdmin()
+    .from("orders")
+    .update({ expired_email_sent_at: null })
+    .eq("id", orderId)
+    .eq("expired_email_sent_at", claimedAt);
   if (error) throw new Error(error.message);
 }
 
@@ -228,6 +342,7 @@ export async function createPendingOrder(
     createdAt,
     expiresAt,
     paystackReference: input.paystackReference,
+    paymentUrl: undefined,
   };
 
   if (!usesSupabase()) return json.jsonCreateOrder(order);
@@ -261,17 +376,16 @@ export async function expirePendingOrder(order: Order): Promise<Order> {
   return updated;
 }
 
-export async function expireDuePendingOrders(): Promise<number> {
+export async function expireDuePendingOrders(): Promise<Order[]> {
   const now = Date.now();
   const orders = await listOrders();
-  let count = 0;
+  const expired: Order[] = [];
   for (const order of orders) {
     if (order.status !== "pending") continue;
     if (new Date(order.expiresAt).getTime() > now) continue;
-    await expirePendingOrder(order);
-    count += 1;
+    expired.push(await expirePendingOrder(order));
   }
-  return count;
+  return expired;
 }
 
 export async function updateOrderPaystackReference(

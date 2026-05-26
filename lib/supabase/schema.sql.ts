@@ -54,7 +54,10 @@ create table if not exists public.orders (
   shipping_fee integer not null default 0,
   total integer not null,
   paystack_reference text,
+  payment_url text,
   awaiting_payment_email_sent_at timestamptz,
+  payment_reminder_email_sent_at timestamptz,
+  expired_email_sent_at timestamptz,
   receipt_email_sent_at timestamptz,
   created_at timestamptz not null default now(),
   paid_at timestamptz,
@@ -93,7 +96,16 @@ where c.id = ordered.id
 /** Idempotent — adds email sent markers used to prevent duplicate order emails. */
 export const ORDER_EMAIL_FIELDS_SQL = `
 alter table public.orders
+  add column if not exists payment_url text;
+
+alter table public.orders
   add column if not exists awaiting_payment_email_sent_at timestamptz;
+
+alter table public.orders
+  add column if not exists payment_reminder_email_sent_at timestamptz;
+
+alter table public.orders
+  add column if not exists expired_email_sent_at timestamptz;
 
 alter table public.orders
   add column if not exists receipt_email_sent_at timestamptz;
