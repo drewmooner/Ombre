@@ -21,7 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Ombré — Fashion wears",
+  title: "0mbré — Fashion wears",
   description:
     "Curated fashion for Nigeria — dresses, Ankara pieces, and more quality wears. Shop online in NGN.",
 };

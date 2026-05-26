@@ -12,10 +12,10 @@ export function buildWhatsAppUrl(message: string): string {
 }
 
 export const WHATSAPP_DEFAULT_MESSAGE =
-  "Hi Ombré, I have a question about your products.";
+  "Hi 0mbré, I have a question about your products.";
 
 export function buildProductInquiryMessage(productName: string): string {
-  return `Hi Ombré, I have a question about ${productName}.`;
+  return `Hi 0mbré, I have a question about ${productName}.`;
 }
 
 export function buildCartInquiryMessage(
@@ -23,7 +23,7 @@ export function buildCartInquiryMessage(
   subtotalLabel: string,
 ): string {
   return [
-    "Hi Ombré, I have a question about items in my bag:",
+    "Hi 0mbré, I have a question about items in my bag:",
     "",
     ...lines,
     "",
@@ -33,7 +33,7 @@ export function buildCartInquiryMessage(
 
 export function buildDeliveryFeeConfirmationMessage(orderId: string): string {
   return [
-    "Hi Ombré,",
+    "Hi 0mbré,",
     "",
     `My order ID is ${orderId}.`,
     "I've completed payment and I want to confirm my delivery fee.",

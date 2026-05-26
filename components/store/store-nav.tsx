@@ -15,7 +15,7 @@ export function StoreNav({ shopOpen, activeOrderCount = 0 }: StoreNavProps) {
       <div className="store-header-inner store-header-inner--responsive">
         <Link href="/store/catalogs" className="store-header-brand min-w-0">
           <BrandLogo size="storeNav" />
-          <span className="store-header-brand-name">Ombré</span>
+          <span className="store-header-brand-name">0mbré</span>
           <span className="store-header-label">Store</span>
         </Link>
 

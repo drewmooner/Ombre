@@ -93,7 +93,7 @@ function emailShell(title: string, bodyHtml: string): string {
         </td></tr>
         <tr><td style="padding:24px 28px;">${bodyHtml}</td></tr>
         <tr><td style="padding:16px 28px 24px;background:rgba(114,47,55,0.04);text-align:center;border-top:1px solid rgba(114,47,55,0.08);">
-          <p style="margin:0;font-size:12px;color:#9a5a63;">Ombré · Curated fashion wears · Nigeria</p>
+          <p style="margin:0;font-size:12px;color:#9a5a63;">0mbré · Curated fashion wears · Nigeria</p>
         </td></tr>
       </table>
     </td></tr>
@@ -109,7 +109,7 @@ export async function sendOrderAwaitingPaymentEmail(
   const expires = formatPaymentDeadline(order.expiresAt);
   const timeoutMinutes = paymentWindowMinutes(order);
   const method = deliveryMethodLabel(order.delivery.method);
-  const subject = `Complete your Ombré order — ${formatNaira(order.total)}`;
+  const subject = `Complete your 0mbré order — ${formatNaira(order.total)}`;
   const text = [
     "Hi,",
     "",
@@ -126,7 +126,7 @@ export async function sendOrderAwaitingPaymentEmail(
     "",
     "If payment isn't received in time, items return to the shop for other customers.",
     "",
-    "— Ombré",
+    "— 0mbré",
   ].join("\n");
 
   const html = emailShell(
@@ -150,7 +150,13 @@ export async function sendOrderAwaitingPaymentEmail(
     </p>`,
   );
 
-  return sendEmail({ to: orderRecipientEmail(order), subject, html, text });
+  return sendEmail({
+    to: orderRecipientEmail(order),
+    subject,
+    html,
+    text,
+    sender: "orders",
+  });
 }
 
 export async function sendOrderAwaitingPaymentEmailIfNeeded(
@@ -178,7 +184,7 @@ export async function sendOrderAwaitingPaymentEmailIfNeeded(
 
 export async function sendOrderPaymentReceivedEmail(order: Order) {
   const method = deliveryMethodLabel(order.delivery.method);
-  const subject = `Payment received — Ombré order ${formatNaira(order.total)}`;
+  const subject = `Payment received — 0mbré order ${formatNaira(order.total)}`;
   const text = [
     "Thank you!",
     "",
@@ -195,7 +201,7 @@ export async function sendOrderPaymentReceivedEmail(order: Order) {
     "",
     `Delivery (${method}): ${order.delivery.fullName}, ${order.delivery.email || order.customerEmail}, ${order.delivery.addressLine}, ${order.delivery.city}, ${order.delivery.state}`,
     "",
-    "— Ombré",
+    "— 0mbré",
   ].join("\n");
 
   const html = emailShell(
@@ -213,7 +219,13 @@ export async function sendOrderPaymentReceivedEmail(order: Order) {
     ${deliveryHtml(order)}`,
   );
 
-  return sendEmail({ to: orderRecipientEmail(order), subject, html, text });
+  return sendEmail({
+    to: orderRecipientEmail(order),
+    subject,
+    html,
+    text,
+    sender: "orders",
+  });
 }
 
 export type PaymentReceiptEmailResult =

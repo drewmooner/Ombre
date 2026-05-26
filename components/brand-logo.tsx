@@ -36,7 +36,7 @@ export function BrandLogo({
   return (
     <Image
       src={logo}
-      alt="Ombré"
+      alt="0mbré"
       width={width}
       height={height}
       className={`inline-block shrink-0 object-contain ${className}`.trim()}

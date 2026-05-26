@@ -16,7 +16,7 @@ export function StoreNav() {
             href="/store/products"
             className="font-display text-xl font-medium tracking-tight text-[var(--accent)]"
           >
-            Ombré
+            0mbré
           </Link>
           <span className="hidden text-xs font-medium uppercase tracking-[0.12em] text-[var(--muted)] sm:inline">
             Store

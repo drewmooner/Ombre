@@ -6,13 +6,20 @@ import {
 import { fetchResend, formatNetworkError } from "@/lib/email/resend-fetch";
 
 const RESEND_API = "https://api.resend.com";
+const AUTH_FROM_FALLBACK = "0mbré Auth <auth@0mbre.shop>";
+const ORDERS_FROM_FALLBACK = "0mbré Orders <orders@0mbre.shop>";
+
+export type EmailSender = "auth" | "orders";
 
 function getResendApiKey(): string | undefined {
   return envVar("RESEND_API_KEY");
 }
 
-function getFromAddress(): string {
-  return envVar("RESEND_FROM") || "Ombré <onboarding@resend.dev>";
+function getFromAddress(sender: EmailSender): string {
+  if (sender === "auth") {
+    return envVar("RESEND_FROM_AUTH") || envVar("RESEND_FROM") || AUTH_FROM_FALLBACK;
+  }
+  return envVar("RESEND_FROM_ORDERS") || envVar("RESEND_FROM") || ORDERS_FROM_FALLBACK;
 }
 
 export function isEmailConfigured(): boolean {
@@ -28,6 +35,7 @@ export async function sendEmail(options: {
   subject: string;
   html: string;
   text?: string;
+  sender?: EmailSender;
   /** When false, omit inline logo attachment. Defaults to true. */
   includeLogo?: boolean;
 }): Promise<SendEmailResult> {
@@ -50,7 +58,7 @@ export async function sendEmail(options: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: getFromAddress(),
+        from: getFromAddress(options.sender ?? "orders"),
         to: [options.to],
         subject: options.subject,
         html: options.html,
@@ -85,23 +93,23 @@ export async function sendEmail(options: {
 }
 
 function buildOmbreOtpEmail(code: string) {
-  const subject = `${code} is your Ombré sign-in code`;
+  const subject = `${code} is your 0mbré sign-in code`;
   const text = [
-    "Ombré",
+    "0mbré",
     "",
     "Here’s your one-time code to finish signing in — quick and secure.",
     "",
     `${code}`,
     "",
-    "Enter it on the Ombré website within 10 minutes. After that, enter your email again on the login page and we’ll send a new code.",
+    "Enter it on the 0mbré website within 10 minutes. After that, enter your email again on the login page and we’ll send a new code.",
     "",
-    "Nobody at Ombré will ask for this code by phone, WhatsApp, DM, or reply to this email.",
+    "Nobody at 0mbré will ask for this code by phone, WhatsApp, DM, or reply to this email.",
     "",
     "Need another code? Go to the login page and request one with the same email.",
     "",
     "Didn’t try to sign in? Ignore this message — your account is unchanged.",
     "",
-    "— Ombré",
+    "— 0mbré",
     "Curated fashion wears · Nigeria",
   ].join("\n");
 
@@ -111,7 +119,7 @@ function buildOmbreOtpEmail(code: string) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Ombré sign-in code</title>
+  <title>Your 0mbré sign-in code</title>
 </head>
 <body style="margin:0;padding:0;background-color:#f3eeec;">
   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f3eeec;padding:32px 16px;">
@@ -128,7 +136,7 @@ function buildOmbreOtpEmail(code: string) {
             <td style="padding:28px 28px 8px;">
               <p style="margin:0 0 8px;font-family:Georgia,'Times New Roman',serif;font-size:20px;line-height:1.4;color:#2a2224;">Almost there</p>
               <p style="margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:15px;line-height:1.6;color:#73666a;">
-                Enter this one-time code on the Ombré website to open your account. It’s valid for <strong style="color:#2a2224;">10 minutes</strong> — after that, use the login page to request a fresh code.
+                Enter this one-time code on the 0mbré website to open your account. It’s valid for <strong style="color:#2a2224;">10 minutes</strong> — after that, use the login page to request a fresh code.
               </p>
             </td>
           </tr>
@@ -149,7 +157,7 @@ function buildOmbreOtpEmail(code: string) {
           <tr>
             <td style="padding:16px 28px 24px;background-color:rgba(114,47,55,0.04);border-top:1px solid rgba(114,47,55,0.08);text-align:center;">
               <p style="margin:0;font-family:system-ui,-apple-system,sans-serif;font-size:12px;line-height:1.5;color:#9a5a63;">
-                Ombré · Curated fashion wears<br />Nigeria · NGN
+                0mbré · Curated fashion wears<br />Nigeria · NGN
               </p>
             </td>
           </tr>
@@ -169,7 +177,13 @@ export async function sendOtpEmail(
 ): Promise<SendEmailResult> {
   const { subject, html, text } = buildOmbreOtpEmail(code);
 
-  const result = await sendEmail({ to, subject, html, text });
+  const result = await sendEmail({
+    to,
+    subject,
+    html,
+    text,
+    sender: "auth",
+  });
 
   if (process.env.NODE_ENV !== "production" && result.ok) {
     console.info(`[email] OTP sent to ${to} (id: ${result.id})`);

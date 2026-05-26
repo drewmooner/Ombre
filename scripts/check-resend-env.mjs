@@ -20,8 +20,8 @@ for (const line of lines) {
   }
   if (key === "RESEND_API_KEY") {
     console.log(`RESEND_API_KEY: ${v ? `set (${v.slice(0, 7)}…, len ${v.length})` : "EMPTY"}`);
-  } else if (key === "RESEND_FROM") {
-    console.log(`RESEND_FROM: ${v || "EMPTY"}`);
+  } else if (key === "RESEND_FROM" || key === "RESEND_FROM_AUTH" || key === "RESEND_FROM_ORDERS") {
+    console.log(`${key}: ${v || "EMPTY"}`);
   } else {
     console.log(`${key}: set`);
   }

@@ -19,7 +19,7 @@ export function StoreLoginForm() {
       <div className="text-center">
         <BrandLogo size="auth" className="mx-auto mb-4" />
         <h1 className="font-display text-2xl font-medium text-[var(--accent)]">Store</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage Ombré products.</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage 0mbré products.</p>
       </div>
       <ActionAlerts state={state} />
       <label className="block text-sm font-medium">

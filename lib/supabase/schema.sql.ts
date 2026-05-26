@@ -1,4 +1,4 @@
-/** Idempotent schema for Ombre shop (run via direct Postgres connection). */
+/** Idempotent schema for 0mbre shop (run via direct Postgres connection). */
 export const SCHEMA_SQL = `
 create table if not exists public.catalogs (
   id text primary key,

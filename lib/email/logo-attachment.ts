@@ -52,7 +52,7 @@ export function emailBrandLogoHtml(
   width = EMAIL_BRAND_LOGO_WIDTH,
 ): string {
   if (!getEmailLogoAttachment()) {
-    return `<p style="margin:0;font-family:Georgia,serif;font-size:26px;color:#722f37;">Ombré</p>`;
+    return `<p style="margin:0;font-family:Georgia,serif;font-size:26px;color:#722f37;">0mbré</p>`;
   }
-  return `<img src="cid:${EMAIL_LOGO_CID}" alt="Ombré" width="${width}" style="display:block;margin:0 auto 8px;max-width:${width}px;height:auto;" />`;
+  return `<img src="cid:${EMAIL_LOGO_CID}" alt="0mbré" width="${width}" style="display:block;margin:0 auto 8px;max-width:${width}px;height:auto;" />`;
 }

@@ -12,7 +12,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-7xl flex-col gap-8 sm:flex-row sm:justify-between">
         <div>
           <BrandLogo size="footer" className="mb-3" />
-          <p className="font-display text-2xl font-medium text-[var(--accent)]">Ombré</p>
+          <p className="font-display text-2xl font-medium text-[var(--accent)]">0mbré</p>
           <p className="mt-2 max-w-xs text-sm leading-relaxed text-[var(--muted)]">
             Curated fashion wears, delivered across Nigeria.
           </p>
@@ -81,7 +81,7 @@ export function Footer() {
 
       <div className="mx-auto mt-8 max-w-7xl border-t border-[rgba(var(--accent-rgb),0.08)] pt-6 sm:mt-10">
         <p className="text-center text-xs tracking-wide text-[var(--muted)] sm:text-left">
-          © 2026 Ombré. All rights reserved.
+          © 2026 0mbré. All rights reserved.
         </p>
       </div>
     </footer>

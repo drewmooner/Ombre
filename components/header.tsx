@@ -57,11 +57,11 @@ export function Header({ customer = null, activeOrderCount = 0 }: HeaderProps) {
         <Link
           href="/"
           className="site-header-brand flex min-w-0 items-center gap-2"
-          aria-label="Ombré home"
+          aria-label="0mbré home"
         >
           <BrandLogo size="header" priority className="shrink-0" />
           <span className="site-header-brand-name shrink-0 font-display text-xl font-medium tracking-tight sm:text-2xl">
-            Ombré
+            0mbré
           </span>
         </Link>
 

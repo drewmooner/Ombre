@@ -1,4 +1,4 @@
-# Ombre
+# 0mbre
 
 Ankara handkerchief shop — Next.js storefront, admin dashboard, Paystack checkout, and Supabase database.
 
@@ -9,6 +9,11 @@ Ankara handkerchief shop — Next.js storefront, admin dashboard, Paystack check
 3. Run dev server: `npm run dev`
 
 See `.env.example` for required environment variables.
+
+Resend sender setup:
+- OTP/sign-in emails use `RESEND_FROM_AUTH`
+- order/payment emails use `RESEND_FROM_ORDERS`
+- both addresses must be verified under your Resend domain before production sending
 
 ## Deploy
 

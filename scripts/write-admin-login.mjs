@@ -19,7 +19,7 @@ export function AdminLoginForm() {
     <form action={action} className="morph-surface mx-auto max-w-sm space-y-6 rounded-3xl p-8">
       <${tag}>
         <h1 className="font-display text-2xl font-medium text-[var(--accent)]">Admin</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage Ombré products.</p>
+        <p className="mt-2 text-sm text-[var(--muted)]">Sign in to manage 0mbré products.</p>
       </${tag}>
       {state.error && (
         <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-800">{state.error}</p>
