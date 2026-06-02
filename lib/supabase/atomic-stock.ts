@@ -53,10 +53,11 @@ export async function atomicDeductProductPieces(
     const product = current[0];
     if (!product) throw new Error("Product not found");
 
+    const label = product.slug || product.name;
     throw new Error(
       product.pieces === 0
-        ? `${product.name} is out of stock`
-        : `Only ${product.pieces} left for ${product.name}`,
+        ? `${label} is out of stock`
+        : `Only ${product.pieces} left for ${label}`,
     );
   });
 }

@@ -214,10 +214,11 @@ export async function deductProductPieces(
 
   const qty = Math.max(0, Math.round(quantity));
   if (qty > product.pieces) {
+    const label = product.slug || product.name;
     throw new Error(
       product.pieces === 0
-        ? `${product.name} is out of stock`
-        : `Only ${product.pieces} left for ${product.name}`,
+        ? `${label} is out of stock`
+        : `Only ${product.pieces} left for ${label}`,
     );
   }
 

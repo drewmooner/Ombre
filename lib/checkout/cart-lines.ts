@@ -8,6 +8,16 @@ export type CartLineInput = {
   quantity: number;
 };
 
+export type CartLineAdjustment = {
+  productId: string;
+  slug: string;
+  name: string;
+  image: string;
+  removed: boolean;
+  requestedQuantity: number;
+  availableQuantity: number;
+};
+
 const MAX_LINE_QTY = 99;
 
 export function parseCartLinesForCheckout(raw: string): CartLineInput[] | null {
@@ -43,24 +53,51 @@ export function parseCartLinesForCheckout(raw: string): CartLineInput[] | null {
   }
 }
 
-/** Load catalog prices from the database — client-submitted prices are ignored. */
-export async function buildOrderLineItemsFromCart(
+export type ResolvedCartLines = {
+  items: OrderLineItem[];
+  adjustments: CartLineAdjustment[];
+};
+
+/**
+ * Re-check stock for each cart line. Unavailable lines are dropped; partial stock
+ * is capped to what's left. Never fails the whole bag for one bad line.
+ */
+export async function resolveOrderLineItemsFromCart(
   lines: CartLineInput[],
-): Promise<{ items: OrderLineItem[] } | { error: string }> {
+): Promise<ResolvedCartLines> {
   const items: OrderLineItem[] = [];
+  const adjustments: CartLineAdjustment[] = [];
 
   for (const line of lines) {
     const product = await findProductById(line.productId);
-    if (!product) {
-      return { error: "An item in your bag is no longer available" };
+    const name = product ? getProductDisplayName(product) : line.productId;
+    const slug = product?.slug ?? line.productId;
+    const image = product?.images[0] ?? "";
+
+    if (!product || !product.inStock || product.pieces <= 0) {
+      adjustments.push({
+        productId: line.productId,
+        slug,
+        name,
+        image,
+        removed: true,
+        requestedQuantity: line.quantity,
+        availableQuantity: 0,
+      });
+      continue;
     }
-    if (!product.inStock || product.pieces < line.quantity) {
-      return {
-        error:
-          product.pieces === 0
-            ? `${product.name} is out of stock`
-            : `Only ${product.pieces} left for ${product.name}`,
-      };
+
+    const quantity = Math.min(line.quantity, product.pieces);
+    if (quantity < line.quantity) {
+      adjustments.push({
+        productId: product.id,
+        slug: product.slug,
+        name: getProductDisplayName(product),
+        image: product.images[0] ?? "",
+        removed: false,
+        requestedQuantity: line.quantity,
+        availableQuantity: quantity,
+      });
     }
 
     items.push({
@@ -68,11 +105,54 @@ export async function buildOrderLineItemsFromCart(
       slug: product.slug,
       name: getProductDisplayName(product),
       price: product.price,
-      quantity: line.quantity,
+      quantity,
       image: product.images[0] ?? "",
       size: product.sizes?.join(", "),
     });
   }
 
+  return { items, adjustments };
+}
+
+/** Strict build — fails if any line cannot be fulfilled exactly (legacy callers). */
+export async function buildOrderLineItemsFromCart(
+  lines: CartLineInput[],
+): Promise<{ items: OrderLineItem[] } | { error: string }> {
+  const { items, adjustments } = await resolveOrderLineItemsFromCart(lines);
+
+  if (adjustments.length > 0) {
+    const first = adjustments[0]!;
+    if (first.removed) {
+      return { error: `${first.slug} is out of stock` };
+    }
+    return {
+      error: `Only ${first.availableQuantity} left for ${first.slug}`,
+    };
+  }
+
+  if (items.length === 0) {
+    return { error: "Your bag is empty or invalid" };
+  }
+
   return { items };
+}
+
+export function formatCartAdjustmentNotice(
+  adjustments: CartLineAdjustment[],
+): string {
+  if (adjustments.length === 0) return "";
+
+  const parts = adjustments.map((a) => {
+    if (a.removed) {
+      return `${a.slug} is no longer available and was removed from your bag.`;
+    }
+    return `${a.slug}: only ${a.availableQuantity} left — quantity updated from ${a.requestedQuantity} to ${a.availableQuantity}.`;
+  });
+
+  const summary =
+    adjustments.length === 1
+      ? parts[0]!
+      : parts.map((p) => `• ${p}`).join(" ");
+
+  return `${summary} Review your updated total below, then pay again.`;
 }

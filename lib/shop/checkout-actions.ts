@@ -8,8 +8,10 @@ import {
   parseDeliveryMethod,
 } from "@/lib/delivery-methods";
 import {
-  buildOrderLineItemsFromCart,
+  formatCartAdjustmentNotice,
   parseCartLinesForCheckout,
+  resolveOrderLineItemsFromCart,
+  type CartLineAdjustment,
 } from "@/lib/checkout/cart-lines";
 import { runOrderMaintenance } from "@/lib/order-maintenance";
 import {
@@ -28,48 +30,10 @@ import {
 import { initializePaystackPayment } from "@/lib/paystack";
 import type { FormActionState } from "@/lib/form-action-state";
 
-export type CheckoutState = FormActionState;
-
-type CheckoutLineInput = {
-  productId: string;
-  slug: string;
-  name: string;
-  price: number;
-  quantity: number;
-  image: string;
+export type CheckoutState = FormActionState & {
+  cartAdjustments?: CartLineAdjustment[];
+  stockNotice?: string;
 };
-
-function parseCartLines(raw: string): CheckoutLineInput[] | null {
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed) || parsed.length === 0) return null;
-    const lines: CheckoutLineInput[] = [];
-    for (const row of parsed) {
-      if (!row || typeof row !== "object") return null;
-      const item = row as CheckoutLineInput;
-      if (
-        typeof item.productId !== "string" ||
-        typeof item.name !== "string" ||
-        typeof item.price !== "number" ||
-        typeof item.quantity !== "number" ||
-        item.quantity < 1
-      ) {
-        return null;
-      }
-      lines.push({
-        productId: item.productId,
-        slug: typeof item.slug === "string" ? item.slug : item.productId,
-        name: item.name,
-        price: Math.round(item.price),
-        quantity: Math.round(item.quantity),
-        image: typeof item.image === "string" ? item.image : "",
-      });
-    }
-    return lines;
-  } catch {
-    return null;
-  }
-}
 
 function parseDelivery(
   formData: FormData,
@@ -138,10 +102,28 @@ export async function startCheckout(
     );
     if (!cartLines) return { error: "Your bag is empty or invalid" };
 
-    const built = await buildOrderLineItemsFromCart(cartLines);
-    if ("error" in built) return { error: built.error };
+    const { items: orderItems, adjustments } =
+      await resolveOrderLineItemsFromCart(cartLines);
 
-    const orderItems = built.items;
+    if (adjustments.length > 0) {
+      if (orderItems.length === 0) {
+        return {
+          error:
+            "Everything in your bag is no longer available. Remove unavailable items or choose something else.",
+          cartAdjustments: adjustments,
+          stockNotice: formatCartAdjustmentNotice(adjustments),
+        };
+      }
+
+      return {
+        cartAdjustments: adjustments,
+        stockNotice: formatCartAdjustmentNotice(adjustments),
+      };
+    }
+
+    if (orderItems.length === 0) {
+      return { error: "Your bag is empty or invalid" };
+    }
     const settings = await getShopSettings();
 
     const subtotal = orderItems.reduce(
@@ -158,7 +140,7 @@ export async function startCheckout(
         await deductProductPieces(item.productId, item.quantity);
         reserved.push(item);
       }
-    } catch (e) {
+    } catch {
       for (const item of reserved) {
         try {
           await restoreProductPieces(item.productId, item.quantity);
@@ -166,9 +148,24 @@ export async function startCheckout(
           /* best effort */
         }
       }
-      return {
-        error: e instanceof Error ? e.message : "Could not reserve stock",
-      };
+
+      const refreshed = await resolveOrderLineItemsFromCart(cartLines);
+      if (refreshed.adjustments.length > 0) {
+        if (refreshed.items.length === 0) {
+          return {
+            error:
+              "Everything in your bag is no longer available. Remove unavailable items or choose something else.",
+            cartAdjustments: refreshed.adjustments,
+            stockNotice: formatCartAdjustmentNotice(refreshed.adjustments),
+          };
+        }
+        return {
+          cartAdjustments: refreshed.adjustments,
+          stockNotice: formatCartAdjustmentNotice(refreshed.adjustments),
+        };
+      }
+
+      return { error: "Could not reserve stock — try again in a moment" };
     }
 
     let order;

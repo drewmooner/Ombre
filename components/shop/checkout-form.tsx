@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 import {
@@ -13,6 +13,7 @@ import { formatNaira } from "@/lib/format-price";
 import { MorphButton } from "@/components/morph-button";
 import { useActionRedirect } from "@/components/use-action-redirect";
 import { CheckoutOrderSummary } from "@/components/shop/checkout-order-summary";
+import { CheckoutStockNotice } from "@/components/shop/checkout-stock-notice";
 
 type CheckoutFormProps = {
   accountEmail: string;
@@ -32,10 +33,28 @@ export function CheckoutForm({
   checkoutReady,
   simulateCheckout,
 }: CheckoutFormProps) {
-  const { items, subtotal, itemCount, clearCart } = useCart();
+  const { items, subtotal, itemCount, clearCart, applyStockAdjustments } =
+    useCart();
   const [state, formAction, pending] = useActionState(startCheckout, initial);
   const [deliveryMethod, setDeliveryMethod] =
     useState<DeliveryMethod>("doorstep");
+  const appliedAdjustmentsKey = useRef<string | null>(null);
+
+  useEffect(() => {
+    const adjustments = state.cartAdjustments;
+    if (!adjustments?.length) return;
+
+    const key = adjustments
+      .map(
+        (a) =>
+          `${a.slug}:${a.removed ? "x" : a.availableQuantity}:${a.requestedQuantity}`,
+      )
+      .join("|");
+    if (appliedAdjustmentsKey.current === key) return;
+    appliedAdjustmentsKey.current = key;
+
+    applyStockAdjustments(adjustments);
+  }, [state.cartAdjustments, applyStockAdjustments]);
 
   const cartJson = useMemo(
     () =>
@@ -54,7 +73,23 @@ export function CheckoutForm({
 
   if (itemCount === 0) {
     return (
-      <div className="py-12 text-center">
+      <div className="py-12 space-y-6 text-center">
+        {state.stockNotice && (
+          <CheckoutStockNotice
+            className="mx-auto max-w-lg text-left"
+            stockNotice={state.stockNotice}
+            adjustments={state.cartAdjustments}
+            cartItems={items}
+          />
+        )}
+        {state.error && (
+          <p
+            className="mx-auto max-w-lg rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm leading-relaxed text-red-800"
+            role="alert"
+          >
+            {state.error}
+          </p>
+        )}
         <p className="text-sm text-[var(--muted)]">Your bag is empty.</p>
         <MorphButton href="/" variant="primary" className="mt-6">
           Continue shopping
@@ -66,6 +101,14 @@ export function CheckoutForm({
   return (
     <form action={formAction} className="checkout-page space-y-8">
       <input type="hidden" name="cart" value={cartJson} />
+
+      {state.stockNotice && (
+        <CheckoutStockNotice
+          stockNotice={state.stockNotice}
+          adjustments={state.cartAdjustments}
+          cartItems={items}
+        />
+      )}
 
       {state.error && (
         <p

@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import type { CartLineAdjustment } from "@/lib/checkout/cart-lines";
 import type { Product } from "./product-types";
 import { getProductDisplayName } from "./product-display-name";
 
@@ -29,6 +30,8 @@ type CartContextValue = {
   addItem: (product: Product, quantity?: number) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  /** Sync bag after checkout stock re-check (matches lines by product slug). */
+  applyStockAdjustments: (adjustments: CartLineAdjustment[]) => void;
   clearCart: () => void;
 };
 
@@ -113,6 +116,34 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   }, []);
 
+  const applyStockAdjustments = useCallback(
+    (adjustments: CartLineAdjustment[]) => {
+      if (!adjustments.length) return;
+
+      setItems((prev) => {
+        let next = prev;
+        for (const adj of adjustments) {
+          if (adj.removed) {
+            next = next.filter((i) => i.slug !== adj.slug);
+            continue;
+          }
+          next = next.map((i) => {
+            if (i.slug !== adj.slug) return i;
+            const qty = Math.max(1, adj.availableQuantity);
+            return {
+              ...i,
+              quantity: qty,
+              maxPieces: adj.availableQuantity,
+              inStock: adj.availableQuantity > 0,
+            };
+          });
+        }
+        return next;
+      });
+    },
+    [],
+  );
+
   const clearCart = useCallback(() => {
     setItems([]);
     if (typeof window !== "undefined") {
@@ -138,6 +169,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addItem,
       removeItem,
       updateQuantity,
+      applyStockAdjustments,
       clearCart,
     }),
     [
@@ -147,6 +179,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       addItem,
       removeItem,
       updateQuantity,
+      applyStockAdjustments,
       clearCart,
     ],
   );
